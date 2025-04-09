@@ -162,5 +162,8 @@ cython_debug/
 # VSCode configuration files
 .vscode/
 
+# PyCharm configuration files
+.idea/
+
 # Data folder
 data/
