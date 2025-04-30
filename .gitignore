@@ -167,3 +167,7 @@ cython_debug/
 
 # Data folder
 data/raw/
+
+# Working folders in notebooks/
+notebooks/cache_pipeline
+notebooks/ML_stats_results
