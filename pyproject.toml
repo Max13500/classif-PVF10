@@ -17,6 +17,27 @@ classifiers = [
 
 requires-python = ">=3.12"
 
+dependencies = [
+  "albumentations",
+  "arrow",
+  "imbalanced-learn",
+  "jupyterlab",
+  "lime",
+  "matplotlib",
+  "opencv-python-headless",
+  "pandas",
+  "pillow",
+  "plotly",
+  "scikit-image",
+  "scikit-learn",
+  "scikit-posthocs",
+  "scipy",
+  "seaborn",
+  "statsmodels",
+  "tqdm",
+  "xgboost",
+]
+
 [build-system]
 requires = ["setuptools >= 77.0.3"]
 build-backend = "setuptools.build_meta"
