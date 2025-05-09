@@ -1,0 +1,28 @@
+{
+    "name": "sep24_cds_pv_image",
+    "build": {
+        "dockerfile": "../Dockerfile",
+        "context": ".."
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-azuretools.vscode-docker",
+                "ms-python.python",
+                "ms-vscode-remote.remote-containers",
+                "yzhang.markdown-all-in-one",
+                "redhat.vscode-yaml",
+                "ms-toolsai.jupyter"
+            ]
+        }
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/github-cli:1": {
+            "version": "latest"
+        }
+    },
+    "mounts": [
+            "source=${localWorkspaceFolder},target=/SEP24_CDS_PHOTOVOLTAIQUE,type=bind,consistency=cache"
+    ],
+    "postCreateCommand": "pip install -e . --root-user-action ignore"
+}
