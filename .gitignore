@@ -170,3 +170,4 @@ data/raw/
 
 # Results folder
 notebooks/ML_images_results_SVM/
+notebooks/ML_images_results_RF/
