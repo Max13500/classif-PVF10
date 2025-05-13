@@ -171,3 +171,6 @@ data/raw/
 # Working folders in notebooks/
 notebooks/cache_pipeline
 notebooks/ML_stats_results
+
+# Results folder
+notebooks/ML_images_results_SVM/
