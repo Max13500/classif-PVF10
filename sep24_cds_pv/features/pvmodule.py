@@ -1,19 +1,21 @@
 """
 PVModule class definition
+FeaturesExtractor class definition
 """
-from typing import Optional, ClassVar
+from typing import Optional, ClassVar, Self
 from dataclasses import dataclass, field
 from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import skew, kurtosis, iqr
+import cv2
 
 
 @dataclass
 class PVModule:
     """Classe contenant les données et méthodes relatives à un module"""
 
-    image: Path
+    image_path: Path
     format: str  # The image format, as prepared by the dataset authors
     original_split: str  # The original dataset split where the image has been affected
     color_array: np.array  # The original 3-channel (BGR) array from the image file
@@ -21,11 +23,47 @@ class PVModule:
     status: Optional[str] = None  # Defect label or healthy
     stats: dict = field(init=False, default_factory=dict)  # Statistical indicators
     histogram: np.array = field(init=False, default=None)  # Histogram (counts, edges)
+    histogram_dict: dict = field(init=False, default_factory=dict)  # Histogram dict {label: count}
+    hot_spots: dict = field(init=False, default_factory=dict)  # Hot spots
 
     # Class variables
     # min_max is used to set the min & max pixel values on all modules
     min_max: ClassVar[tuple] = (0, 255)
+    # the "vault" is used to record all loaded modules, referenced by the path of the image file
+    _vault: ClassVar[dict[str, Self]] = {}
         
+    def __post_init__(self):
+        """Enregistre l'objet créé dans le 'coffre-fort' :-)"""
+
+        self._vault[self.image_path.as_posix()] = self
+
+    @classmethod
+    def get_module(cls, image_path: Path | str) -> Self:
+        """Renvoie l'objet PVModule correspondant à l'image passée en paramètre"""
+
+        image_path = Path(image_path)
+
+        if (module := cls._vault.get(image_path.as_posix())) is not None:
+            return module
+        else:
+            img = cv2.imread(image_path) # Récupération de l'image en couleur
+            img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+            status = str(image_path.parent.name)[2:]
+            split = str(image_path.parents[1].name)
+            format = str(image_path.parents[2].name).removeprefix("PVF_10_")
+
+            module = cls(
+                image_path=image_path, 
+                format=format,
+                original_split=split,
+                color_array=img,
+                array=img_gray, 
+                status=status,
+            )
+
+            return module
+
     def plot(self, cmap: str = "inferno", display_colorbar: bool = True):
         """Affiche le thermogramme (la matrice des températures) du module"""
 
@@ -49,7 +87,7 @@ class PVModule:
         major_ticks = [t for t in edges if t % 10 == 0]
         plt.xticks(major_ticks, rotation=45, ha="right")
         plt.xticks(edges, minor=True)
-        plt.title(f"{self.image.stem}\n{self.format}")
+        plt.title(f"{self.image_path.stem}\n{self.format}")
         if display_labels:
             plt.xlabel("Pixel values")
             plt.ylabel("Pixel count")
@@ -58,37 +96,89 @@ class PVModule:
     def extract_stats(self):
         """Extrait des indicateurs statistiques de la matrice de températures"""
 
-        # Standard statistical indicators
-        self.stats["mean"] = np.nanmean(self.array)
-        self.stats["median"] = np.nanmedian(self.array)
-        self.stats["max"] = np.nanmax(self.array)
-        self.stats["std"] = np.nanstd(self.array)
-        self.stats["min"] = np.nanmin(self.array)
-        self.stats["ptp"] = self.stats["max"] - self.stats["min"]
+        if not self.stats:
 
-        # Additional statistical indicators
-        self.stats["skewness"] = skew(self.array, axis=None)
-        self.stats["kurtosis"] = kurtosis(self.array, axis=None)
-        self.stats["iqr_25_75"] = iqr(self.array)
+            # Standard statistical indicators
+            self.stats["mean"] = np.nanmean(self.array)
+            self.stats["median"] = np.nanmedian(self.array)
+            self.stats["max"] = np.nanmax(self.array)
+            self.stats["std"] = np.nanstd(self.array)
+            self.stats["min"] = np.nanmin(self.array)
+            self.stats["ptp"] = self.stats["max"] - self.stats["min"]
 
-        # Percentiles
-        for p in np.arange(0.05, 1., 0.05):
-            label = f"p_{p:.2f}"
-            self.stats[label] = np.nanquantile(self.array, p)
+            # Additional statistical indicators
+            self.stats["skewness"] = skew(self.array, axis=None)
+            self.stats["kurtosis"] = kurtosis(self.array, axis=None)
+            self.stats["iqr_25_75"] = iqr(self.array)
 
-        # Array size
-        self.stats["size"] = np.sum(~np.isnan(self.array))
+            # Percentiles
+            for p in np.arange(0.05, 1., 0.05):
+                label = f"p_{p:.2f}"
+                self.stats[label] = np.nanquantile(self.array, p)
+
+            # Array size
+            self.stats["size"] = np.sum(~np.isnan(self.array))
 
     def extract_histogram(self):
         """Extrait l'histogramme de la matrice de températures"""
 
-        self.histogram = np.histogram(self.array, bins=np.arange(self.min_max[0], self.min_max[1] + 2))
+        if not self.histogram:
+            self.histogram = np.histogram(self.array, bins=np.arange(self.min_max[0], self.min_max[1] + 2))
+            self.histogram_dict = {f"hist_{bin_left_edge}": count 
+                                   for count, bin_left_edge in zip(self.histogram[0], self.histogram[1][:-1])
+                                  }
+
+
+    def extract_hotspots(self):
+        """Extrait les hotspots de la matrice de températures"""
+
+        if not self.hot_spots:
+
+            hot_spots = {}
+
+            # Apply Otsu's thresholding
+            _, thresh = cv2.threshold(self.array, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+            # Morphological cleaning (optional but recommended)
+            kernel = np.ones((3, 3), np.uint8)
+            cleaned = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=2)
+            hot_spots["cleaned"] = cleaned
+
+            # Connected components
+            num_labels, labels_im = cv2.connectedComponents(cleaned)
+            hot_spots["labels_im"] = labels_im
+
+            hot_spots["spots"] = []
+            # Calculate area and mean value of each hot spot
+            for label in range(1, num_labels):  # skip background label 0
+                mask = (labels_im == label)
+                area = np.sum(mask)
+                mean = np.mean(self.array[mask])
+                hot_spots["spots"].append({
+                    "area": area,
+                    "mean": mean,
+                })
+
+            self.hot_spots = hot_spots
+
+    def plot_hot_spots(self):
+        """Affiche les hot spots du module"""
+
+        plt.figure(figsize=(5, 2))
+        plt.subplot(1, 2, 1)
+        plt.title("Cleaned Binary")
+        plt.imshow(self.hot_spots["cleaned"], cmap='gray')
+
+        plt.subplot(1, 2, 2)
+        plt.title("Labeled Hot Spots")
+        plt.imshow(self.hot_spots["labels_im"], cmap='nipy_spectral')
+        plt.show()
 
     def __str__(self):
         """Permet d'afficher les infos principales de l'objet"""
 
         content = []
-        content.append(f"Image: {self.image.stem}")
+        content.append(f"Image: {self.image_path.stem}")
         content.append(f"Format: {self.format}")
         content.append(f"Split d'origine: {self.original_split}")
         content.append(f"Statut: {self.status}")
