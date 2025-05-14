@@ -4,6 +4,7 @@ model_selection subpackage (like sklearn.model_selection)
 from collections import namedtuple
 from sklearn.model_selection import train_test_split
 import pandas as pd
+import numpy as np
 from sklearn.metrics import classification_report, confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -54,19 +55,19 @@ def improved_train_test_validation_split(data: pd.DataFrame,
     return Splits(X_train, X_test, X_validation, y_train, y_test, y_validation)
 
 
-def display_results(y_test, y_pred, classes):
+def display_results(y_test, y_pred):
 
     # Afficher la matrice de confusion
     conf_matrix = confusion_matrix(y_test, y_pred)
     plt.figure(figsize=(5, 4))
-    sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", yticklabels=classes, xticklabels=classes)
+    sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=np.unique(y_test), yticklabels=np.unique(y_test))
     plt.xlabel("Prédictions")
     plt.ylabel("Vraies classes")
     plt.title("Matrice de confusion")
     plt.show()
 
     # Générer le rapport de classification
-    class_report = classification_report(y_test, y_pred, target_names=classes)
+    class_report = classification_report(y_test, y_pred)
 
     # Afficher le rapport
     print("Rapport de classification :\n", class_report)
