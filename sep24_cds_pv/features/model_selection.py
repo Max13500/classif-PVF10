@@ -16,6 +16,7 @@ def improved_train_test_validation_split(data: pd.DataFrame,
                                          train_size: float,
                                          test_size: float, 
                                          validation_size: float, 
+                                         stratify: bool = True,
                                          **kwargs):
     """Split the dataset into train, test (and validation) respecting original 'target_col' ratios in each"""
 
@@ -25,36 +26,32 @@ def improved_train_test_validation_split(data: pd.DataFrame,
 
     features = data.drop(columns=[target_col])
     target = data[target_col]
+    
+    if stratify:
+        stratify = target
+    else:
+        stratify = None
 
-    cat_vals = data[target_col].unique()
+    if validation_size > 0.:
+        X_remain, X_validation, y_remain, y_validation = train_test_split(features, 
+                                                                          target, 
+                                                                          test_size=validation_size, 
+                                                                          stratify=stratify, 
+                                                                          **kwargs,
+                                                                          )
+        new_train_size = train_size / (train_size + test_size)
+        if stratify is not None:
+            stratify = y_remain
+    else:
+        X_validation = pd.DataFrame()
+        y_validation = pd.Series()
+        X_remain = features
+        y_remain = target
+        new_train_size = train_size
+        
+    X_train, X_test, y_train, y_test = train_test_split(X_remain, y_remain, train_size=new_train_size, stratify=stratify, **kwargs)
 
-    splits = {}
-
-    for cat_val in cat_vals:
-        selection_mask = data[target_col] == cat_val
-
-        if validation_size > 0.:
-            X_remain, X_validation, y_remain, y_validation = train_test_split(features.loc[selection_mask, :], 
-                                                                              target[selection_mask], 
-                                                                              test_size=validation_size, 
-                                                                              **kwargs,
-                                                                              )
-            new_train_size = train_size / (train_size + test_size)
-        else:
-            X_validation = pd.DataFrame()
-            y_validation = pd.Series()
-            X_remain = features.loc[selection_mask, :]
-            y_remain = target[selection_mask]
-            new_train_size = train_size
-            
-        X_train, X_test, y_train, y_test = train_test_split(X_remain, y_remain, train_size=new_train_size, **kwargs)
-
-        splits[cat_val] = X_train, X_test, X_validation, y_train, y_test, y_validation
-
-    X_train_full, X_test_full, X_validation_full, y_train_full, y_test_full, y_validation_full = [pd.concat(splits_tuple, axis=0) 
-                                                                                                  for splits_tuple in zip(*splits.values())]
-
-    return Splits(X_train_full, X_test_full, X_validation_full, y_train_full, y_test_full, y_validation_full)
+    return Splits(X_train, X_test, X_validation, y_train, y_test, y_validation)
 
 
 def display_results(y_test, y_pred, classes):
