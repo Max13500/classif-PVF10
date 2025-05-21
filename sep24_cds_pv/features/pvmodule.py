@@ -8,6 +8,7 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import skew, kurtosis, iqr
+from skimage.feature import graycomatrix, graycoprops
 import cv2
 
 
@@ -24,11 +25,20 @@ class PVModule:
     stats: dict = field(init=False, default_factory=dict)  # Statistical indicators
     histogram: np.array = field(init=False, default=None)  # Histogram (counts, edges)
     histogram_dict: dict = field(init=False, default_factory=dict)  # Histogram dict {label: count}
+    glcm_vector: dict = field(init=False, default_factory=dict)  # GLCM dict {glcm_feature: value}
     hot_spots: dict = field(init=False, default_factory=dict)  # Hot spots
 
     # Class variables
+    # ---------------
+    
     # min_max is used to set the min & max pixel values on all modules
     min_max: ClassVar[tuple] = (0, 255)
+
+    # GLCM constants    
+    GLCM_DISTANCES = [8]
+    GLCM_ANGLES = [0, np.pi/4, np.pi/2, 3*np.pi/4]
+    GLCM_PROPERTIES = ['contrast', 'dissimilarity', 'homogeneity', 'energy', 'correlation']
+
     # the "vault" is used to record all loaded modules, referenced by the path of the image file
     _vault: ClassVar[dict[str, Self]] = {}
         
@@ -128,6 +138,40 @@ class PVModule:
                                    for count, bin_left_edge in zip(self.histogram[0], self.histogram[1][:-1])
                                   }
 
+    @classmethod
+    def get_glcm_feature_names(cls) -> list:
+        """Renvoie la liste des features GLCM"""
+        glcm_feature_names = []
+        for prop in cls.GLCM_PROPERTIES:
+            for distance in cls.GLCM_DISTANCES:
+                for angle in cls.GLCM_ANGLES:
+                    # On stocke dans les noms des features un label du type : contrast_d1_a45
+                    glcm_feature_names.append(f"{prop}_d{distance}_a{np.degrees(angle):.0f}")
+        return glcm_feature_names
+    
+    def extract_glcm(self):
+        """Extrait le vecteur GLCM de la matrice de températures"""
+
+        if not self.glcm_vector:
+
+            glcm_feature_names = self.get_glcm_feature_names()
+
+            glcm_vector = []
+            # Calcul de la matrice GLCM (256 x 256 x distances x angles)
+            glcm = graycomatrix(
+                self.array,
+                distances=self.GLCM_DISTANCES,
+                angles=self.GLCM_ANGLES,
+                levels=256
+            )
+            # Pour chaque propriété GLCM
+            for prop in self.GLCM_PROPERTIES:
+                # On la calcule pour les différentes distances et les différents angles 
+                prop_matrix = graycoprops(glcm, prop)  # Matrice distances x angles
+                # On transforme la matrice en vecteur qu'on stocke dans glcm_vector
+                glcm_vector.extend(prop_matrix.flatten())
+
+            self.glcm_vector = dict(zip(glcm_feature_names, glcm_vector))
 
     def extract_hotspots(self):
         """Extrait les hotspots de la matrice de températures"""
