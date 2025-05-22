@@ -53,9 +53,9 @@ class PVModule:
 
         image_path = Path(image_path)
 
-        if (module := cls._vault.get(image_path.as_posix())) is not None:
-            return module
-        else:
+        module = cls._vault.get(image_path.as_posix())
+
+        if module is None:
             img = cv2.imread(image_path) # Récupération de l'image en couleur
             img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -72,7 +72,7 @@ class PVModule:
                 status=status,
             )
 
-            return module
+        return module
 
     def plot(self, cmap: str = "inferno", display_colorbar: bool = True):
         """Affiche le thermogramme (la matrice des températures) du module"""
