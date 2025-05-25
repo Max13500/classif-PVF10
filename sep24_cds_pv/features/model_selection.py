@@ -59,15 +59,19 @@ def display_results(y_test, y_pred):
 
     # Afficher la matrice de confusion
     conf_matrix = confusion_matrix(y_test, y_pred)
-    plt.figure(figsize=(5, 4))
+    fig = plt.figure(figsize=(6, 5))
     sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=np.unique(y_test), yticklabels=np.unique(y_test))
     plt.xlabel("Prédictions")
     plt.ylabel("Vraies classes")
     plt.title("Matrice de confusion")
+    plt.tight_layout()
     plt.show()
 
     # Générer le rapport de classification
-    class_report = classification_report(y_test, y_pred)
+    class_report_text = classification_report(y_test, y_pred)
+    class_report_dict = classification_report(y_test, y_pred, output_dict=True)
 
     # Afficher le rapport
-    print("Rapport de classification :\n", class_report)
+    print("Rapport de classification :\n", class_report_text)
+
+    return fig, class_report_text, class_report_dict
