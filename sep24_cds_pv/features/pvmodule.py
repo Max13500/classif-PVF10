@@ -74,6 +74,12 @@ class PVModule:
 
         return module
 
+    @classmethod
+    def get_known_modules(cls) -> list[Self]:
+        """Renvoie la liste de tous les modules connus"""
+
+        return cls._vault.values()
+    
     def plot(self, cmap: str = "inferno", display_colorbar: bool = True):
         """Affiche le thermogramme (la matrice des températures) du module"""
 
@@ -226,8 +232,7 @@ class PVModule:
         content.append(f"Format: {self.format}")
         content.append(f"Split d'origine: {self.original_split}")
         content.append(f"Statut: {self.status}")
-        content.append(f"Taille: {self.stats['size']}")
-        content.append(f"Min/max: {self.stats['min']}/{self.stats['max']}")
+        content.append(f"Taille: {self.array.shape}")
 
         return "\n".join(content)
     
