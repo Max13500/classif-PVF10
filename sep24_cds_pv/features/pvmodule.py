@@ -50,8 +50,8 @@ class PVModule:
     GLCM_PROPERTIES = ['contrast', 'dissimilarity', 'homogeneity', 'energy', 'correlation']
 
     # Edge density - Canny thresholds
-    CANNY_THRESHOLD1 = 100
-    CANNY_THRESHOLD2 = 200
+    CANNY_THRESHOLD1 = 70
+    CANNY_THRESHOLD2 = 140
 
     # Entropy constants
     ENTROPY_RADIUS = 4
