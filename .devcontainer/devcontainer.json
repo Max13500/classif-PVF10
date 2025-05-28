@@ -12,7 +12,8 @@
                 "ms-vscode-remote.remote-containers",
                 "yzhang.markdown-all-in-one",
                 "redhat.vscode-yaml",
-                "ms-toolsai.jupyter"
+                "ms-toolsai.jupyter",
+                "ms-toolsai.datawrangler"
             ]
         }
     },
