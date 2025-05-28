@@ -178,3 +178,5 @@ notebooks/catboost_info
 
 # Results folder
 notebooks/ML_images_results_SVM/
+notebooks/ML_images_results_RF/
+notebooks/ML_images_results_DenseKeras/
