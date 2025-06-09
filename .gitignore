@@ -172,3 +172,4 @@ data/raw/
 notebooks/ML_images_results_SVM/
 notebooks/ML_images_results_RF/
 notebooks/ML_images_results_DenseKeras/
+notebooks/DL_images_results/
