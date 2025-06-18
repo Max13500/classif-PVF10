@@ -127,6 +127,15 @@ class PVModule:
         
         return stats_feature_names
 
+    @classmethod
+    def empty_vault(cls):
+        """
+        Vide le 'coffre-fort'.
+        Permet de de remettre à zéro la mécanique de 'cache' mise en place au niveau de la classe PVModule.
+        """
+
+        cls._vault = {}
+
     def extract_stats(self):
         """Extrait des indicateurs statistiques de la matrice de températures"""
 
