@@ -37,6 +37,7 @@ dependencies = [
   "scikit-posthocs",
   "scipy",
   "seaborn",
+  "shap",
   "statsmodels",
   "tqdm",
   "umap-learn",
