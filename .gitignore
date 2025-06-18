@@ -180,3 +180,5 @@ notebooks/catboost_info
 notebooks/ML_images_results_SVM/
 notebooks/ML_images_results_RF/
 notebooks/ML_images_results_DenseKeras/
+notebooks/DL_images_results/
+notebooks/DL_images_results_MobileNet/
