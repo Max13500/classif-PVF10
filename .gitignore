@@ -182,3 +182,6 @@ notebooks/ML_images_results_RF/
 notebooks/ML_images_results_DenseKeras/
 notebooks/DL_images_results/
 notebooks/DL_images_results_MobileNet/
+notebooks/DL_images_results_MobileNetV2/
+notebooks/DL_images_results_EfficientNet/
+notebooks/DL_images_results_EfficientNetV2/
