@@ -167,3 +167,24 @@ cython_debug/
 
 # Data folder
 data/raw/
+
+# Output csv file from 'data_augmentation' notebook
+data/processed/structure_pvf_10_augmented.csv
+
+# Working folders in notebooks/
+notebooks/cache_pipeline
+notebooks/ML_stats_results
+notebooks/catboost_info
+
+# Results folder
+notebooks/ML_images_results_SVM/
+notebooks/ML_images_results_RF/
+notebooks/ML_images_results_DenseKeras/
+notebooks/DL_images_results/
+notebooks/DL_images_results_MobileNet/
+notebooks/DL_images_results_MobileNetV2/
+notebooks/DL_images_results_EfficientNet/
+notebooks/DL_images_results_EfficientNetV2/
+
+# Local configuration files
+*.local.yaml

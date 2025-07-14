@@ -1,0 +1,53 @@
+[project]
+name = "sep24_cds_pv"
+version = "0.0.1"
+description = "SEP24-CDS-PHOTOVOLTAIQUE DataScientest Project"
+authors = [
+  { name = "Maxime Benoit", email = "maxime.benoit2008@orange.fr" },
+  { name = "Sylvain Cordier", email = "sylvain@bloomware.tech" },
+  { name = "Philippe Marechal", email = "phil.marechal@free.fr" },
+]
+license = { file = "LICENSE" }
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+]
+
+requires-python = ">=3.12"
+
+dependencies = [
+  "albumentations",
+  "arrow",
+  "catboost",
+  "imbalanced-learn",
+  "ipywidgets",
+  "jupyterlab",
+  "lightgbm",
+  "lime",
+  "matplotlib",
+  "mlflow==2.22.0",
+  "opencv-python-headless",
+  "pandas",
+  "pillow",
+  "plotly",
+  "scikit-image",
+  "scikit-learn",
+  "scikit-posthocs",
+  "scipy",
+  "seaborn",
+  "shap",
+  "statsmodels",
+  "tqdm",
+  "umap-learn",
+  "xgboost",
+]
+
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["sep24_cds_pv*"]
+namespaces = false
