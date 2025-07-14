@@ -185,3 +185,6 @@ notebooks/DL_images_results_MobileNet/
 notebooks/DL_images_results_MobileNetV2/
 notebooks/DL_images_results_EfficientNet/
 notebooks/DL_images_results_EfficientNetV2/
+
+# Local configuration files
+*.local.yaml
