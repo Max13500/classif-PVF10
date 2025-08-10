@@ -21,6 +21,12 @@ modeles =  {
       'trained_model':None,
       'predicted_data_test':None
    },
+   'XGBoost' : {
+      'file':'final_xgboost.joblib',
+      'preprocessed_data_test':None,
+      'trained_model':None,
+      'predicted_data_test':None
+   },
    'CNN Perso' : {
       'file':'final_cnn.keras',
       'preprocessed_data_test':None,
@@ -85,22 +91,26 @@ def preprocess_path_MobileNet(path):
 # Fonction de preprocessing des données de test d'un modèle (avec mise en cache) 
 @st.cache_data
 def preprocess_on_test(modele,X_test):
+   # Preprocessing des images adapté à CNN
    if modele=="CNN Perso":
       return np.array([preprocess_path_CNN(p) for p in X_test['Chemin']])
+   # Preprocessing des images adapté à MobileNet
    elif modele=="MobileNet":
       return np.array([preprocess_path_MobileNet(p) for p in X_test['Chemin']])
-   # Pipelines ML
+   # Pipelines ML : le preprocessing est inclus dans la pipeline
    else:
       return X_test[['Chemin']]
 
 # Fonction de chargement d'un modèle (avec mise en cache)
 @st.cache_resource
 def load_modele(modele):
+    # CNN : chargement keras
     if modele=="CNN Perso":
       return load_model(f"{TRAINED_MODELS_DIR}{modeles[modele]['file']}")
+    # MobileNet : chargement keras avec preprocess_input
     elif modele=="MobileNet":
        return load_model(f"{TRAINED_MODELS_DIR}{modeles[modele]['file']}",custom_objects={"preprocess_input": preprocess_input})
-    # Pipelines ML
+    # Pipelines ML : chargement joblib
     else:
        return joblib.load(f"{TRAINED_MODELS_DIR}{modeles[modele]['file']}")
 
@@ -108,9 +118,14 @@ def load_modele(modele):
 @st.cache_data
 def predict_on_test(modele,classes):
     preds = modeles[modele]["trained_model"].predict(modeles[modele]["preprocessed_data_test"])
+    # Les modèles DLL renvoient une probabilité par classe
     if modele in ("CNN Perso","MobileNet"):
       y_pred_num = np.argmax(preds, axis=-1)
       y_pred = np.array(classes)[y_pred_num]
+    # Le modèle XGBoost renvoie le numero de la classe prédite
+    elif modele == 'XGBoost' :
+       y_pred = np.array(classes)[preds]
+    # Les autres modèles ML renvoient directement le label de la classe prédite 
     else:
        y_pred = preds
     return y_pred

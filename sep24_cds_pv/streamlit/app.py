@@ -7,7 +7,7 @@ import seaborn as sns
 from sklearn.metrics import accuracy_score,classification_report, confusion_matrix
 
 # Charger les extracteurs personnalisés pour pipelines ML classiques (nécessaire pour le chargement des modèles avec joblib)
-from extractors import HOGExtractor, GLCMExtractor, EntropyExtractor, EdgeDensityExtractor, PixelsBrutsExtractor
+from extractors import BaseStatsExtractor,HOGExtractor, GLCMExtractor, EntropyExtractor, EdgeDensityExtractor, PixelsBrutsExtractor
 
 # Charger les fonctions de l'application
 from utils import modeles,load_dataset,encode_labels,preprocess_on_test,load_modele,predict_on_test
@@ -29,20 +29,20 @@ if 'initialised' not in st.session_state:
   progress.progress(25)
 
   # Preprocessing des données de test (en cache)
-  status.text("Preprocessing de l'ensemble de test...")
   for modele in modeles:
+    status.text(f"Preprocessing de l'ensemble de test pour {modele}...")
     modeles[modele]["preprocessed_data_test"] = preprocess_on_test(modele,X_test)
   progress.progress(50)
 
   # Chargement des modèles entraînés (en cache)
-  status.text("Chargement des modèles...")
   for modele in modeles :
+    status.text(f"Chargement du modèle {modele}...")
     modeles[modele]["trained_model"] = load_modele(modele)
   progress.progress(75)
 
   # Prédictions sur les données de test (en cache)
-  status.text("Prédictions sur l'ensemble de test...")
   for modele in modeles :
+    status.text(f"Prédictions sur l'ensemble de test pour {modele}...")
     modeles[modele]["predicted_data_test"] = predict_on_test(modele,tuple(encoder.classes_))
   progress.progress(100)
 

@@ -1,9 +1,69 @@
 import pandas as pd
 import numpy as np
 import cv2
-from skimage.feature import hog
+from scipy.stats import skew, kurtosis, iqr
+from skimage.feature import hog,graycomatrix, graycoprops
+from skimage.filters.rank import entropy
+from skimage.morphology import disk
 from sklearn.base import BaseEstimator, TransformerMixin
 
+# Transformeur qui renvoie le dataframe des indicateurs statistiques
+class BaseStatsExtractor(BaseEstimator, TransformerMixin):
+    def __init__(self,image_size=(60,110)):
+        self.image_size = image_size
+        # On détermine le nom des features statistiques à extraire
+        self.feature_names_ = [
+            # Indicateurs classiques
+            "mean", "median", "max", "std", "min", "ptp", 
+            # Indicateurs additionnels
+            "skewness", "kurtosis", "iqr_25_75",
+        ]
+        # Percentiles
+        for p in np.arange(0.05, 1., 0.05):
+            label = f"p_{p:.2f}"
+            self.feature_names_.append(label)
+
+    def fit(self, X, y=None):
+        return self
+    
+    # Méthode d'extraction des statistiques d'une image
+    def extract_stats(self, gray_img):
+        # Calcul des statistiques générales
+        stats_vector = [
+                np.nanmean(gray_img),
+                np.nanmedian(gray_img),
+                np.nanmax(gray_img),
+                np.nanstd(gray_img),
+                np.nanmin(gray_img),
+                np.nanmax(gray_img)-np.nanmin(gray_img),
+                skew(gray_img,axis=None),
+                kurtosis(gray_img,axis=None),
+                iqr(gray_img)
+            ]
+        # Ajout des percentiles
+        for p in np.arange(0.05, 1., 0.05):
+            stats_vector.append(np.nanquantile(gray_img, p))
+        return stats_vector 
+
+    def transform(self, X):
+        # On va calculer les statistiques
+        stats_vectors = []
+        # On parcourt les chemins des images
+        for img_path in X['Chemin']:
+            # Lecture de l'image
+            img = cv2.imread(img_path)
+            # Conversion en niveaux de gris et resizing
+            img_gray_resized = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            # Extraction et stockage des stats
+            stats_vector = self.extract_stats(img_gray_resized)
+            stats_vectors.append(stats_vector)
+        # On renvoie le dataframe des stats
+        return pd.DataFrame(stats_vectors, index=X.index, columns=self.feature_names_)
+
+    # Pour récupération du nom des features créées
+    def get_feature_names_out(self, input_features=None):
+        return self.feature_names_
+    
 # Transformeur qui renvoie le dataframe des vecteurs HOG
 class HOGExtractor(BaseEstimator, TransformerMixin):
     def __init__(self, image_size=(60,110), pixels_per_cell=(8,8),cells_per_block=(2,2)):
@@ -53,9 +113,6 @@ class HOGExtractor(BaseEstimator, TransformerMixin):
     # Pour récupération du nom des features créées
     def get_feature_names_out(self, input_features=None):
         return self.feature_names_
-
-
-from skimage.feature import graycomatrix, graycoprops
 
 # Transformeur qui renvoie le dataframe des caractéristiques GLCM
 class GLCMExtractor(BaseEstimator, TransformerMixin):
@@ -115,10 +172,7 @@ class GLCMExtractor(BaseEstimator, TransformerMixin):
     # Pour récupération du nom des features créées
     def get_feature_names_out(self, input_features=None):
         return self.feature_names_
-    
-from skimage.filters.rank import entropy
-from skimage.morphology import disk
-from scipy.stats import skew, kurtosis
+  
 
 # Transformeur qui renvoie le dataframe des caractéristiques de l'entropie
 class EntropyExtractor(BaseEstimator, TransformerMixin):
@@ -176,8 +230,6 @@ class EntropyExtractor(BaseEstimator, TransformerMixin):
     # Pour récupération du nom des features créées
     def get_feature_names_out(self, input_features=None):
         return self.feature_names_
-
-from skimage.filters.rank import entropy
 
 # Transformeur qui renvoie le dataframe des densités de contours
 class EdgeDensityExtractor(BaseEstimator, TransformerMixin):
@@ -243,6 +295,4 @@ class PixelsBrutsExtractor(BaseEstimator, TransformerMixin):
     # Pour récupération du nom des features créées
     def get_feature_names_out(self, input_features=None):
         return self.feature_names_
-    
-# Création du transformeur
-pixbrut_extr = PixelsBrutsExtractor()
+
