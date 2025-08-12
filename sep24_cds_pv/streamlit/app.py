@@ -1,16 +1,14 @@
 import streamlit as st
 from streamlit_option_menu import option_menu
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.metrics import accuracy_score,classification_report, confusion_matrix
 
-# Charger les extracteurs personnalisés pour pipelines ML classiques (nécessaire pour le chargement des modèles avec joblib)
+# Extracteurs personnalisés pour pipelines ML classiques (nécessaire pour le chargement des modèles avec joblib)
 from extractors import BaseStatsExtractor,HOGExtractor, GLCMExtractor, EntropyExtractor, EdgeDensityExtractor, PixelsBrutsExtractor
 
-# Charger les fonctions de l'application
-from utils import modeles,load_dataset,encode_labels,preprocess_on_test,load_modele,predict_on_test
+# Fonctions de chargement des données / modèles
+from app_setup import modeles,load_dataset,encode_labels,load_modele,predict_on_test
+
+# Fonctions d'affichage des différentes pages
+from app_views import show_presentation,show_dataviz,show_modelisation,show_demo,show_bilan
 
 # Au lancement : chargement des données en cache avec barre de progression
 if 'initialised' not in st.session_state:
@@ -28,23 +26,17 @@ if 'initialised' not in st.session_state:
   encoder,y_train_enc,y_test_enc = encode_labels(y_train,y_test)
   progress.progress(25)
 
-  # Preprocessing des données de test (en cache)
-  for modele in modeles:
-    status.text(f"Preprocessing de l'ensemble de test pour {modele}...")
-    modeles[modele]["preprocessed_data_test"] = preprocess_on_test(modele,X_test)
-  progress.progress(50)
-
   # Chargement des modèles entraînés (en cache)
-  for modele in modeles :
-    status.text(f"Chargement du modèle {modele}...")
-    modeles[modele]["trained_model"] = load_modele(modele)
-  progress.progress(75)
+  for i,modele_name in enumerate(modeles) :
+    status.text(f"Chargement du modèle {modele_name}...")
+    modeles[modele_name]["trained_model"] = load_modele(modele_name)
+    progress.progress(int(25 + (i+1) * (50-25) / len(modeles)))
 
   # Prédictions sur les données de test (en cache)
-  for modele in modeles :
-    status.text(f"Prédictions sur l'ensemble de test pour {modele}...")
-    modeles[modele]["predicted_data_test"] = predict_on_test(modele,tuple(encoder.classes_))
-  progress.progress(100)
+  for i,modele_name in enumerate(modeles) :
+    status.text(f"Prédictions sur l'ensemble de test pour {modele_name}...")
+    modeles[modele_name]["predicted_data_test"] = predict_on_test(modele_name,X_test,tuple(encoder.classes_))
+    progress.progress(int(50 + (i+1) * (100-50) / len(modeles)))
 
   # Fin du chargement : supprimer la barre de progression
   progress.empty()
@@ -60,55 +52,43 @@ else:
   # Encodage des labels
   encoder,y_train_enc,y_test_enc = encode_labels(y_train,y_test)
 
-  # Preprocessing des données de test
-  for modele in modeles:
-    modeles[modele]["preprocessed_data_test"] = preprocess_on_test(modele,X_test)
-
   # Chargement des modèles entraînés
-  for modele in modeles :
-    modeles[modele]["trained_model"] = load_modele(modele)
+  for modele_name in modeles :
+    modeles[modele_name]["trained_model"] = load_modele(modele_name)
 
   # Prédictions sur les données de test
-  for modele in modeles :
-    modeles[modele]["predicted_data_test"] = predict_on_test(modele,tuple(encoder.classes_))
+  for modele_name in modeles :
+    modeles[modele_name]["predicted_data_test"] = predict_on_test(modele_name,X_test,tuple(encoder.classes_))
 
 
-# Titre et navigation sur 3 pages
+# Titre et navigation sur 5 pages
 st.title("Classification des défauts sur des panneaux photovoltaïques")
-pages = ["Exploration", "DataVizualization", "Modélisation"]
+pages = ["Présentation", "DataViz", "Modélisation","Démo","Bilan"]
 with st.sidebar:
     page = option_menu(
         menu_title="Sommaire",
         options=pages,
-        icons=["search", "bar-chart", "cpu"],  # icônes Bootstrap
+        icons=["house", "bar-chart", "cpu", "image", "check-circle"],  # icônes Bootstrap
         menu_icon="cast",
         default_index=0,
     )
 
-# Page Exploration
+# Page Présentation
 if page == pages[0] : 
-  st.write("### Introduction")
-
-  st.dataframe(df_pvf10.head(10))
-  st.write(df_pvf10.shape)
+  show_presentation(df_pvf10)
 
 # Page DataViz
 if page == pages[1] : 
-  st.write("### DataVizualization")
+  show_dataviz(df_pvf10)
+  
+# Page Modélisation
+if page == pages[2] :
+  show_modelisation(modeles,y_test)
 
-# Page modélisation
-if page == pages[2] : 
-   st.write("### Modélisation")
-   option = st.selectbox('Choix du modèle', list(modeles.keys()))
-   st.write(option)
-   st.write(modeles[option]["preprocessed_data_test"].shape)
-   st.metric("Accuracy", round(accuracy_score(y_test,modeles[option]["predicted_data_test"]), 3))
-   
-# Fonction de prédiction sur une image unique (PAS de cache)
-#def predict_single_image(model, image_path, preprocess_fn):
-#    img = preprocess_fn(image_path)  # resize...
-#    img_batch = np.expand_dims(img, axis=0)  # pour batch=1
-#    return model.predict(img_batch)
-# Page "Démo"
-#img_path = random.choice(X_test_df['Chemin'])
-#pred = predict_single_image(model, img_path, preprocess_fn)
+# Page Démo
+if page == pages[3] : 
+  show_demo(modeles,X_test,y_test)
+
+# Page bilan
+if page == pages[4] :
+  show_bilan()
