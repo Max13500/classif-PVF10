@@ -15,21 +15,25 @@ TRAINED_MODELS_DIR = "../../models/"
 # Modèles
 modeles =  {
    'SVM' : {
+      'methodo_name':'Machine Learning avec features localisés',
       'file':'final_svm.joblib',
       'trained_model':None,
       'predicted_data_test':None
    },
    'XGBoost' : {
+      'methodo_name':'Machine Learning avec features non localisés',
       'file':'final_xgboost.joblib',
       'trained_model':None,
       'predicted_data_test':None
    },
    'CNN Perso' : {
+      'methodo_name':'Deep Learning',
       'file':'final_cnn.keras',
       'trained_model':None,
       'predicted_data_test':None
    },
    'MobileNet' : {
+      'methodo_name':'Transfer Learning',
       'file':'final_mobilenet.keras',
       'trained_model':None,
       'predicted_data_test':None
