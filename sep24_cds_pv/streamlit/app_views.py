@@ -11,25 +11,224 @@ def load_image(path):
     return Image.open(path)
 
 def show_presentation(df):
-    st.header("Présentation")
-    st.write("TODO : Présentation du contexte, des enjeux, et du dataset")
+    # Titre
+    st.html(
+        """
+        <div style="
+            border: 2px solid #1ABC9C;   /* bordure turquoise */
+            border-radius: 12px;         /* angles arrondis */
+            padding: 20px;               /* espace autour du texte */
+            text-align: center;          /* texte centré */
+            box-shadow: 2px 2px 12px rgba(0,0,0,0.1);  /* légère ombre */
+        ">
+            <h1 style="margin:0;font-size:48px">Classification de défauts dans les panneaux photovoltaïques</h1>
+        </div>
+        """)
+    
+    st.subheader("Le contexte")
+    st.markdown("***TODO***")
 
+    st.subheader("Les objectifs")
+    st.markdown("***TODO***")
 
-def show_dataviz(df):
-    st.header("DataViz")
-    st.write("TODO : Analyse des données avec figures")
+    st.subheader("Les données")
+    st.markdown("***TODO***")
+    
+    # On récupère au hasard une ligne du dataframe par classe
+    df_sel = df.groupby("Classe").apply(lambda x: x.sample(1))
 
-    # Répartition des classes
-    fig = plt.figure()
-    sns.countplot(y = df['Classe'],hue = df['Classe'],legend=False)
-    plt.title("Répartition des classes de défauts",fontsize=14, fontweight='bold')
-    plt.xlabel("Nombre d'images")
-    plt.ylabel("Classe de défaut")
-    sns.despine()
-    st.pyplot(fig)
+    st.markdown("""
+    Voici un **premier aperçu** des images du dataset (une image par classe) :
+    """)
+
+    # Affichage de 10 images : 5 images sur 2 lignes, avec leur classe en titre
+    with st.container(border=True):
+        for i in range(0, 10, 5):
+            cols = st.columns(5)
+            for j, col in enumerate(cols):
+                if i + j < len(df_sel):
+                    col.image(df_sel["Chemin"].iloc[i + j], caption = df_sel["Classe"].iloc[i + j],use_container_width=True)
+    
+    # Bouton pour rafraichir => grâce au tirage aléatoire, on affichera d'autres images avec les paramètres sélectionnés
+    if st.button("🔄 Changer d'images"):
+        pass
+
+def show_dataviz(df,statistiques):
+    st.header("DataViz",divider="gray")
+
+    st.subheader("Analyse générale du dataset")
+
+    # Description du dataset et nettoyage
+    st.markdown("""
+    Notre étude porte sur **5579 images de type PNG au format 110x60 réparties selon 10 classes de défauts**.
+    Nous avons procédé à une analyse globale et un **nettoyage** de ce jeu de données :
+    - suppression de 7 doublons d'images    
+    - annotation de 4% des images qui ont une dimension réelle différente de 110x60 (images d'origine carrées => potentiellement mauvais découpage ou resizing)
+    - renommage des 10 classes pour plus de lisibilité
+    """)
+
+    # Affichage du dataframe des métadonnées
+    with st.expander("Pour visualiser le dataframe final contenant les métadonnées..."):
+        st.dataframe(df)
+    
+    st.subheader("Equilibre des classes")
+
+    # Description de l'équilibre des classes
+    st.markdown("""
+    Notre jeu de données est réparti suivant dix catégories : neuf types de défauts différents et une classe représentant les panneaux sains (*healthy panel*).
+    La répartition des classes est **légèrement déséquilibrée** :
+    - la classe des panneaux sains représente un peu plus d'un quart des observations
+    - les neuf classes de défauts se partagent le reste de manière relativement équitable
+    - deux catégories sont toutefois en retrait : Break et String short circuit.
+    """)
+
+    # Diagramme de répartition des classes
+    col1, col2, col3 = st.columns([0.1, 0.8, 0.1]) 
+    with col2:     
+        fig = plt.figure()
+        sns.countplot(y = df['Classe'],hue = df['Classe'],legend=False)
+        plt.title("Répartition des classes de défauts",fontsize=12, fontweight='bold')
+        plt.xlabel("Nombre d'images")
+        plt.ylabel("Classe de défaut")
+        sns.despine()
+        st.pyplot(fig)
+
+    st.subheader("Les pseudo-couleurs")
+
+    # Description des canaux RGB
+    st.markdown("""
+    L'analyse des canaux RGB a montré une **composante rouge très élevée**, et une composante bleue faible, quel que soit le type de défaut observé.
+                
+    Pour vous en rendre compte, visualisez la répartition des intensités dans les 3 canaux Rouge, Vert et Bleu pour l'ensemble des classes :
+    """)    
+
+    # Distribution des intensités moyennes des canaux RGB
+    # Afficher 2 classes en parallèle
+    rgb_cols = st.columns(2)
+    for i,c in enumerate(rgb_cols):
+        with c:
+            fig = plt.figure()
+            # L'utilisateur choisit la classe
+            nom_classe = st.selectbox("Classe de défaut :" if i==0 else "Comparer avec :",df["Classe"].unique(),i,key=f"classe_rgb_{i}")
+            # Récupération des intensités moyennes sur les 3 canaux R/G/B
+            mean_colors = statistiques["Moyenne des canaux RGB"][nom_classe]
+            # Création du violinplot correspondant
+            parts = plt.violinplot(np.array(mean_colors),showmedians=True)
+            plt.ylim([0,255])
+            plt.title(f"Distribution des canaux RVB",fontsize=14, fontweight='bold')
+            plt.xticks([1, 2, 3],labels=["Rouge","Vert","Bleu"],fontsize=14)
+            plt.ylabel("Intensités moy (0-255)",fontsize=14)
+            # Changer la couleur de chaque violon
+            colors = ["red","green","blue"]
+            for j, pc in enumerate(parts['bodies']):
+                pc.set_facecolor(colors[j])
+                pc.set_edgecolor('black')
+            st.pyplot(fig)
+    
+    # Fin description des canaux RGB
+    st.markdown("""            
+    Les images thermiques infra-rouges sont en **fausses couleurs** (ou pseudo-couleurs) :
+    chaque pixel encode en réalité une valeur de température, et une palette de couleur adaptée (du type “inferno”) est utilisée pour améliorer la perception à l'oeil humain des variations de température.
+                
+    Nous avons donc fait le choix de travailler sur les **images converties en niveaux de gris**.
+    """)
+
+    st.subheader("Les niveaux de gris")
+
+    # Description des niveaux de gris
+    st.markdown("""
+    L'analyse de **la distribution des niveaux de gris a montré des spécificités** selon le type de défauts.
+
+    Vous pouvez observer pour chaque classe les histogrammes de 5 **indicateurs statistiques** des niveaux de gris :
+    """)    
+
+    # L'utilisateur choisit l'indicateur statistique
+    indicateur = st.selectbox("Indicateur statistique",list(statistiques.keys())[1:6]) 
+    # Afficher 2 classes en parallèle
+    ndg_cols = st.columns(2)
+    for i,c in enumerate(ndg_cols):
+        with c:
+            fig = plt.figure()
+            # L'utilisateur choisit la classe
+            nom_classe = st.selectbox("Classe de défaut :" if i==0 else "Comparer avec :",df["Classe"].unique(),i,key=f"classe_ndg_{i}")
+            # Récupération de l'indicateur statistique demandé sur les NDG
+            statistique = statistiques[indicateur][nom_classe]
+            # Afficher l'histogramme et la densité de probabilité de l'indicateur
+            sns.histplot(statistique,bins=20,stat="density",kde=True,alpha=0.6)
+            plt.xlabel(indicateur,fontsize=14)
+            plt.ylabel("Densité de probabilité",fontsize=14)
+            plt.title(f"Histogramme (avec densité KDE)",fontsize=14, fontweight='bold')
+            st.pyplot(fig)
+
+    # Fin description des niveaux de gris
+    st.markdown("""
+    Les différences sont en général plus marquées sur les indicateurs Max et Ecart-type.
+    
+    Nous avons complété cette visualisation par des **tests statistiques** (Kruskal-Wallis + test post-hoc de Dunn-Bonferroni) qui ont montré que des classes sont significativement différentes l'une de l'autre selon les indicateurs observés.
+    """)    
+
+    st.subheader("Les textures")
+
+    # Description entropie et densité de contours
+    st.markdown("""
+    L'analyse de caractéristiques avancées extraites des images a permis d'approfondir cette étude :
+    - la **densité de contours** : proportion de contours dans l'image après application du filtre de Canny, indiquant des transitions abruptes.
+    - l'**entropie** : quantifie la diversité ou le désordre des niveaux de gris. Une entropie élevée traduit une texture complexe.
+
+    Observez pour chaque classe les histogrammes de ces propriétés :
+    """)
+
+    # Propriétés de texture
+    # L'utilisateur choisit la propriété de texture
+    propriete = st.selectbox("Propriété texturale",list(statistiques.keys())[6:8]) 
+    # Afficher 2 classes en parallèle
+    prop_cols = st.columns(2)
+    for i,c in enumerate(prop_cols):
+        with c:
+            fig = plt.figure()
+            # L'utilisateur choisit la classe
+            nom_classe = st.selectbox("Classe de défaut :" if i==0 else "Comparer avec :",df["Classe"].unique(),i,key=f"classe_prop_{i}")
+            # Récupération de la propriété demandée
+            statistique = statistiques[propriete][nom_classe]
+            # Afficher l'histogramme et la densité de probabilité de la propriété
+            sns.histplot(statistique,bins=20,stat="density",kde=True,alpha=0.6)
+            plt.xlabel(propriete,fontsize=14)
+            plt.ylabel("Densité de probabilité",fontsize=14)
+            plt.title(f"Histogramme (avec densité KDE)",fontsize=14, fontweight='bold')
+            st.pyplot(fig)
+    
+    # Description propriétés GLCM
+    st.markdown("""
+    Nous avons également calculé la matrice [GLCM](https://en.wikipedia.org/wiki/Co-occurrence_matrix) de chaque image.
+    La Gray Level Co-occurrence Matrix mesure la fréquence de co-occurrence de paires de niveaux de gris à une certaine distance et orientation.
+    Nous pouvons en extraire les propriétés suivantes :
+    - le **contraste** : mesure l'intensité des variations locales. Un contraste élevé indique une texture avec de fortes différences de niveaux de gris.
+    - l'**énergie** : plus l'énergie est grande, plus la texture est uniforme et répétitive.
+    - l'**homogénéité** : reflète la similarité entre pixels voisins. Une forte homogénéité indique une texture lisse.
+    - la **corrélation** : mesure la dépendance linéaire entre pixels voisins. Une forte corrélation indique une structure régulière.
+
+    Voici les valeurs moyennes de ces propriétés observées pour chaque classe :
+    """)
+    
+    # Histogrammes GLCM
+    propriete_glcm = st.selectbox("Propriété GLCM",["Contraste","Correlation","Energie","Homogeneite"]) 
+    col1, col2, col3 = st.columns([0.1, 0.8, 0.1]) 
+    with col2:  
+        st.image(
+            load_image(f"resources/histo_{propriete_glcm.lower()}.png"),
+            use_container_width=True
+        )
+    
+    # Fin description textures
+    st.markdown("""
+    Concernant les textures, les propriétés de Contraste et de Densité de contours semblent avoir un pouvoir discriminant plus marqué en général.
+    
+    Nous avons complété cette visualisation par des **tests statistiques** (Kruskal-Wallis + test post-hoc de Dunn-Bonferroni).
+    Ils nous ont montré que des classes sont significativement différentes l'une de l'autre selon les propriétés texturales observées.
+    """)  
 
 def show_method():
-    st.header("Méthodologie")
+    st.header("Méthode",divider="gray")
 
     st.subheader(f"Machine Learning et Deep Learning")
 
@@ -48,7 +247,8 @@ def show_method():
         st.markdown("""
                     Ces descripteurs conservent une information de position ou de structure dans l'image. Nous avons extrait pour chaque image :
                     - Le **vecteur de pixels bruts** : les images sont d'abord redimensionnées (de 60x110 à 30x55 pixels par exemple), puis leurs pixels sont linéarisés sous forme de vecteur 1D. Chaque pixel, codant une valeur de température (niveau de gris), est alors une feature.
-                    - Le **descripteur HOG** (Histogram of Oriented Gradients) : on découpe l'image en cellules et on y calcule des histogrammes d'orientations de gradient, puis on normalise ces histogrammes. Le vecteur HOG résultant capture les formes et structures présentes dans l'image.
+                    - Le **descripteur HOG** ([Histogram of Oriented Gradients](https://towardsdatascience.com/histogram-of-oriented-gradients-hog-in-computer-vision-a2ec66f6e671/?source=rss----7f60cf5620c9---4)) :
+                    on découpe l'image en cellules et on y calcule des histogrammes d'orientations de gradient, puis on normalise ces histogrammes. Le vecteur HOG résultant capture les formes et structures présentes dans l'image.
                     """)
         st.image(load_image("resources/features_hog.png"),caption = "Exemples de descripteurs HOG (représentation 2D) pour quelques images")
 
@@ -57,8 +257,7 @@ def show_method():
         st.markdown("""
                     Ces descripteurs sont calculés sur l'image entière, sans considération explicite de la position spatiale. Nous avons extrait pour chaque image :
                     - des **statistiques sur les intensités** (niveaux de gris de l'image) : moyenne, médiane, minimum, maximum, écart-type, quantiles (p5, p10, …, p95) et histogramme sur 256 bins (0 à 255).
-                    - des **propriétés extraites de la matrice GLCM** : la Grey Level Co-occurrence Matrix mesure la fréquence de co-occurrence de paires de niveaux de gris à une certaine distance et orientation.
-                    On en extrait des propriétés qui quantifient la texture globale de l'image : contraste, énergie... 
+                    - des **propriétés extraites de la matrice GLCM** : contraste, énergie, homogénéité, corrélation
                     - des **statistiques sur la carte d'entropie** : moyenne, écart-type, histogramme d'entropie, etc. pour caractériser la complexité de l'image.
                     - la **densité de contours** détectés dans l'image : pourcentage calculé après application d'un filtre de Canny.
                     - des **statistiques sur les “hot spots”** : ce sont des régions anormalement chaudes dans le panneau. Nous utilisons un seuillage adaptatif pour les détecter et nous en extrayons des statistiques...
@@ -106,7 +305,7 @@ def show_method():
     """)
 
 def show_results(modeles,y_test):
-    st.header("Résultats")
+    st.header("Résultats",divider="gray")
 
     st.markdown("""
     Nous présentons les meilleurs modèles obtenus après optimisation, pour les 4 approches mentionnées.
@@ -235,7 +434,7 @@ def show_results(modeles,y_test):
 
 
 def show_demo(modeles,X_test,y_test):
-    st.header("Démo")
+    st.header("Démo",divider="gray")
 
     st.markdown("""
                 Choisissez des images de test : vous pouvez afficher tous les types de défauts, ou vous concentrer sur un défaut en particulier.
@@ -272,7 +471,7 @@ def show_demo(modeles,X_test,y_test):
     sel_y_test = y_test[index_sel]
     
     st.markdown("""
-    Pour chaque image, comparez les prédictions de nos modèles : les erreurs apparaissent en rouge.
+    Pour chaque image, **comparez les prédictions de nos modèles** : les erreurs apparaissent en rouge.
     """)
 
     # Entêtes de la grille de comparaison
@@ -306,7 +505,47 @@ def show_demo(modeles,X_test,y_test):
                 with cols[j+2]:
                     st.html(f"<div style='text-align:center; border:1px solid #eee; padding:2px; color:{color}'><b>{pred}</b></div>")
 
-def show_bilan():
-    st.header("Bilan")
-    st.write("TODO : conclusion sur meilleur modèle, conclusion métier, critique, perspectives")
+def show_bilan(modeles,y_test):
+    st.header("Bilan",divider="gray")
+
+    st.subheader(f"Le Transfer Learning en tête")
+    st.markdown("***TODO***")
+
+    # L'utilisateur choisit un modèle de référence
+    modele_ref_name = st.selectbox("Référence de comparaison",list(modeles.keys()))
+
+    # Récupération des prédictions du modèle de référence sur le jeu de test
+    y_pred_ref = modeles[modele_ref_name]["predicted_data_test"]
+    accu_ref = accuracy_score(y_test,y_pred_ref)
+    f1_ref = f1_score(y_test,y_pred_ref,average="macro")
+    prec_healthy_ref = precision_score(y_test, y_pred_ref, labels=["healthy panel"],average=None)[0]
+    recall_healthy_ref = recall_score(y_test, y_pred_ref, labels=["healthy panel"],average=None)[0]
+
+    # Pour chaque modèle
+    for modele_name in modeles:
+        # Récupération des prédictions du modèle sur le jeu de test
+        y_pred = modeles[modele_name]["predicted_data_test"]
+        # Affichage côte à côte des métriques principales et de leur différence avec les métriques de référence
+        col1, col2, col3, col4, col5 = st.columns(5)
+        with col1:
+            st.markdown(f"**{modele_name} :**")
+        with col2:
+            accu = accuracy_score(y_test,y_pred)
+            st.metric("Accuracy", f"{accu*100:.1f} %", f"{(accu-accu_ref)*100:.1f} %" if modele_name!=modele_ref_name else None)
+        with col3:
+            f1 = f1_score(y_test,y_pred,average="macro")
+            st.metric("F1 macro", f"{f1*100:.1f} %", f"{(f1-f1_ref)*100:.1f} %" if modele_name!=modele_ref_name else None)
+        with col4:
+            prec_healthy = precision_score(y_test, y_pred, labels=["healthy panel"],average=None)[0]
+            st.metric("Précision Healthy", f"{prec_healthy*100:.1f} %", f"{(prec_healthy - prec_healthy_ref)*100:.1f} %" if modele_name!=modele_ref_name else None)
+        with col5:
+            recall_healthy = recall_score(y_test, y_pred, labels=["healthy panel"],average=None)[0]
+            st.metric("Rappel Healthy", f"{recall_healthy*100:.1f} %", f"{(recall_healthy - recall_healthy_ref)*100:.1f} %" if modele_name!=modele_ref_name else None)
+    
+    st.subheader("Conclusion")
+    st.markdown("***TODO : conclusion métier, regard critique***")
+
+    st.subheader("Perspectives")
+    st.markdown("***TODO***")
+
 

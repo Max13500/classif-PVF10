@@ -1,4 +1,8 @@
 import streamlit as st
+from PIL import Image
+import cv2
+from skimage.measure import shannon_entropy
+from skimage.feature import graycomatrix, graycoprops
 import pandas as pd
 import numpy as np
 import tensorflow as tf
@@ -61,6 +65,83 @@ def load_dataset():
     X_test = df_test.drop('Classe',axis=1)
     y_test = df_test['Classe']
     return df_pvf10,X_train,X_test,y_train,y_test
+
+# Fonction de calculs de statistiques sur les différentes classes (avec mise en cache)
+@st.cache_data
+def calculate_stats(df,calculate_glcm=False):
+   # Dicos de statistiques par classe
+   rgb_moy = {}
+   intensites_min = {}
+   intensites_max = {}
+   intensites_median = {}
+   intensites_moy = {}
+   intensites_std = {}
+   entropies={}
+   edge_densities={}
+   contrastes = {}
+   homogeneites = {}
+   energies = {}
+   correlations = {}
+   # Pour chaque classe
+   for classe in df["Classe"].unique():
+      # Initialisation des statistiques
+      rgb_moy[classe] = []
+      intensites_min[classe] = []
+      intensites_max[classe] = []
+      intensites_median[classe] = []
+      intensites_moy[classe] = []
+      intensites_std[classe] = []
+      entropies[classe] = []
+      edge_densities[classe] = []
+      contrastes[classe] = []
+      homogeneites[classe] = []
+      energies[classe] = []
+      correlations[classe] = []
+      # Pour chaque image de la classe
+      for chemin in df.loc[(df["Classe"]==classe)]["Chemin"]:
+         # Récupération de l'image en couleurs
+         img_rgb = Image.open(chemin).convert("RGB")
+         img_rgb_array = np.array(img_rgb)
+         # Calcul et stockage des indicateurs statistiques sur les canaux RGB
+         rgb_moy[classe].append(np.mean(img_rgb_array, axis=(0, 1)))
+         # Récupération de l'image en NdG
+         img_gray = Image.open(chemin).convert("L") 
+         img_gray_array = np.array(img_gray)
+         # Calcul et stockage des indicateurs statistiques sur le NdG
+         intensites_min[classe].append(np.min(img_gray_array))
+         intensites_max[classe].append(np.max(img_gray_array))
+         intensites_median[classe].append(np.median(img_gray_array))
+         intensites_moy[classe].append(np.mean(img_gray_array))
+         intensites_std[classe].append(np.std(img_gray_array))
+         # Calcul et stockage de l'entropie
+         entropies[classe].append(shannon_entropy(img_gray_array))
+         # Calcul et stockage de la densité de contours
+         edges = cv2.Canny(img_gray_array[2:-2,2:-2], 70, 140) # Filtre de Canny sur l'image rognée
+         edge_density =  np.sum(edges > 0) / edges.size # On en déduit la densité de contours
+         edge_densities[classe].append(edge_density)
+         # Calcul et stockage des propriétés GLCM
+         if (calculate_glcm):
+            glcm = graycomatrix(img_gray_array, distances=[8], angles=[0, np.pi/4, np.pi/2, 3*np.pi/4], levels=256) # Calcul de la matrice GLCM
+            contrastes[classe].append(graycoprops(glcm, 'contrast').mean())
+            homogeneites[classe].append(graycoprops(glcm, 'homogeneity').mean())
+            energies[classe].append(graycoprops(glcm, 'energy').mean())
+            correlations[classe].append(graycoprops(glcm, 'correlation').mean())
+
+   # On renvoie un dictionnaire global pour ces statistiques
+   return {
+      "Moyenne des canaux RGB":rgb_moy,
+      "Min des Niveaux de gris":intensites_min,
+      "Max des Niveaux de gris":intensites_max,
+      "Mediane des Niveaux de gris":intensites_median,
+      "Moyenne des Niveaux de gris":intensites_moy,
+      "Ecart-type des Niveaux de gris":intensites_std,
+      "Entropie":entropies,
+      "Densite de contours":edge_densities,
+      "Contraste":contrastes,
+      "Homogeneite":homogeneites,
+      "Energie":energies,
+      "Correlation":correlations
+   }
 
 # Fonction d'encodage des labels
 @st.cache_data
