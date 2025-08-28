@@ -5,3 +5,4 @@ from .page_method import show_method
 from .page_results import show_results
 from .page_demo import show_demo
 from .page_bilan import show_bilan
+from .page_references import show_references
