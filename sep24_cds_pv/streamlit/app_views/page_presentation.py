@@ -161,9 +161,7 @@ def show_presentation(df):
                             image = load_image(df_sel["Chemin"].iloc[i + j])
                             if grayscale:
                                 image = image.convert("L")
-                            col.image(image, 
-                                      caption = df_sel["Classe"].iloc[i + j], 
-                                      use_container_width=True)
+                            col.image(image, caption = df_sel["Classe"].iloc[i + j], width="stretch")
         
         st.markdown("""
             - **Les images thermographiques "brutes" sont :red[encodées sur un seul canal]** (la valeur de chaque pixel est fonction de la :red[température de l'objet]).

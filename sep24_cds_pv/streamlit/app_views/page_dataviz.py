@@ -169,7 +169,7 @@ def show_dataviz(df,statistiques):
     with col2:  
         st.image(
             load_image(f"resources/histo_{propriete_glcm.lower()}.png"),
-            use_container_width=True
+            width="stretch",
         )
     
     # Fin description textures
