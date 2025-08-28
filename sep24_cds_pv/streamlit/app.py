@@ -120,7 +120,8 @@ with st.sidebar:
             },
             "nav-link": {
                 "color": "white",
-                "--hover-color": "#34495E"
+                "--hover-color": "#34495E",
+                "margin":"0px",
             },
             "nav-link-selected": {
                 "background-color": "#1ABC9C",
