@@ -22,7 +22,8 @@ from app_views import (
 # Configuration générale de la page
 st.set_page_config(
     page_title="Classification PVF-10",
-    page_icon="resources/logo.png"
+    page_icon="resources/logo.png",
+    layout="wide",
 )
 # Sidebar anthracite
 st.markdown(
