@@ -1,23 +1,36 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import io
+import contextlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, classification_report, confusion_matrix
 
 from .utils import load_image
 
+# Fonction pour affichage du model.summary()
+def get_model_summary(model):
+    stream = io.StringIO()
+    with contextlib.redirect_stdout(stream):
+        model.summary()
+    summary_str = stream.getvalue()
+    return summary_str
 
 def show_results(modeles,y_test):
     st.header("Résultats",divider="gray")
 
     st.markdown("""
-    Nous présentons les meilleurs modèles obtenus après optimisation, pour les 4 approches mentionnées.
+    Voici les **:red[meilleurs modèles]** obtenus après optimisation, pour les 4 approches mentionnées :
+    - **Machine Learning avec features localisés** : classifieur **SVM**
+    - **Machine Learning avec features non localisés** : classifieur **XGBoost**
+    - **Deep Learning *from scratch*** : notre **CNN perso**
+    - **Transfer Learning** : modèle **MobileNetV2** fine-tuné                
     """)
 
     # Choix du modèle par l'utilisateur  
     modele_name = st.selectbox(
-        "Choix du modèle",
+        "Sélectionnez une approche / un modèle",
         list(modeles.keys()),
         format_func=lambda name: f"{modeles[name]['methodo_name']} : modèle {name}"
     )
@@ -26,34 +39,25 @@ def show_results(modeles,y_test):
 
     # Description de l'architecture du modèle
     if modele_name == "SVM":
-        st.markdown("""
-                    Les meilleurs résultats de l'approche ML avec features localisés ont été obtenus avec le classifieur SVM (noyau rbf) après ces étapes de preprocessing :
-                    - extraction de features : vecteur de pixels bruts + descripteur HOG + statistiques d'entropie
-                    - normalisation Min-Max
-                    - réduction de dimensions par PCA conservant 90% de la variance
-                    """)
+        with st.columns([0.1,0.8,0.1])[1]:
+            st.image(load_image("resources/resultats/architecture_svm.png"))
     if modele_name == "XGBoost":
-        st.markdown("""
-                    Les meilleurs résultats de l'approche ML avec features non localisés ont été obtenus avec le classifieur XGBoost après extraction des features,
-                    sans étape de preprocessing supplémentaire : statistiques sur les intensités + propriétés extraites de GLCM + statistiques d'entropie + densité de contours
-                    """)
+        with st.columns([0.3,0.4,0.3])[1]:
+            st.image(load_image("resources/resultats/architecture_xgboost.png"))
     if modele_name == "CNN Perso":
-        st.markdown("""
-                    Les meilleurs résultats de l'approche Deep Learning ont été obtenus avec ce réseau de neurones :
-                    - couches d'augmentation de données actives : `RandomFlip`, `RandomBrightness`, `RandomContrast` et `GaussianNoise`
-                    - normalisation des niveaux de gris par `Rescaling`
-                    - 4 blocs convolutionels pour l'extraction de features composés chacun de : `Conv2D` avec activation ReLU, puis `MaxPooling2D` pour réduire la taille, et un `Dropout` afin de régulariser 
-                    - passage en 1D : simple `Flatten`
-                    - pour la classification : 2 couches `Dense` 
-                    """)
+        with st.columns([0.1,0.8,0.1])[1]:
+            st.image(load_image("resources/resultats/architecture_cnn.png"))
+        with st.expander("Pour visualiser l'architecture détaillée du réseau..."):
+            # Récupérer et afficher le résumé dans Streamlit
+            summary_str = get_model_summary(modeles[modele_name]["trained_model"])
+            st.code(summary_str, language="text")
     if modele_name == "MobileNet":
-        st.markdown("""
-                    Les meilleurs résultats de l'approche Transfer Learning ont été obtenus avec un fine-tuning du modèle pré-entraîné MobileNetV2 :
-                    - couches d'augmentation de données actives : `RandomFlip`, `RandomBrightness`, `RandomContrast` et `GaussianNoise`
-                    - couches d'extraction de features : backbone MobileNet, avec un dégel des poids à partir du 5ème bloc
-                    - passage en 1D par `GlobalAveragePooling2D`
-                    - pour la classification : une couche `Dense` puis une régularisation `Dropout`, et une dernière couche `Dense`
-                    """)
+        with st.columns([0.2,0.6,0.2])[1]:
+            st.image(load_image("resources/resultats/architecture_mobileNet.png"))
+        with st.expander("Pour visualiser l'architecture détaillée du réseau..."):
+            # Récupérer et afficher le résumé dans Streamlit
+            summary_str = get_model_summary(modeles[modele_name]["trained_model"])
+            st.code(summary_str, language="text")
 
     st.subheader(f"Performances du modèle {modele_name}")
 
@@ -72,66 +76,67 @@ def show_results(modeles,y_test):
         st.metric("Rappel Healthy", round(recall_score(y_test, y_pred, labels=["healthy panel"],average=None)[0], 3))
 
     # Choix par l'utilisateur entre rapport de classification et matrice de confusion
-    display = st.radio('Que souhaitez-vous afficher ?', ('Rapport de classification', 'Matrice de confusion'))
+    tab1, tab2 = st.tabs(["Rapport de classification", "Matrice de confusion"])
 
     # Affichage rapport de classification
-    if display == 'Rapport de classification':
-        report_dict = classification_report(y_test, y_pred, output_dict=True)
-        report_df = pd.DataFrame(report_dict).transpose()
-        # Métriques par classe
-        st.table(report_df.iloc[:-3,:].style.format(precision=2))
-        # Métriques globales
-        st.table(report_df.iloc[-2:,:].style.format(precision=2))
+    with tab1:
+        with st.columns([0.25,0.5,0.25])[1]:
+            report_dict = classification_report(y_test, y_pred, output_dict=True)
+            report_df = pd.DataFrame(report_dict).transpose()
+            # Métriques par classe
+            st.table(report_df.iloc[:-3,:].style.format(precision=2))
+            # Métriques globales
+            st.table(report_df.iloc[-2:,:].style.format(precision=2))
 
     # Affichage matrice de confusion
-    elif display == 'Matrice de confusion':
-        cm = confusion_matrix(y_test, y_pred)
-        fig = plt.figure()
-        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=np.unique(y_test), yticklabels=np.unique(y_test))
-        plt.xlabel("Prédictions")
-        plt.ylabel("Vraies classes")
-        st.pyplot(fig)
+    with tab2:
+        with st.columns([0.25,0.5,0.25])[1]:
+            cm = confusion_matrix(y_test, y_pred)
+            fig = plt.figure()
+            sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=np.unique(y_test), yticklabels=np.unique(y_test))
+            plt.xlabel("Prédictions")
+            plt.ylabel("Vraies classes")
+            st.pyplot(fig)
     
     st.subheader(f"Interprétabilité du modèle {modele_name}")
 
     # Description de l'interprétabilité du modèle
     if modele_name == "SVM":
         st.markdown("""
-                    Le classifieur SVM, qui repose sur un noyau non linéaire et précédé d'une PCA, n'est pas facilement interprétable.
-                    Nous avons utilisé **LIME** qui reste une méthode approximative et locale.
-
-                    Dans cet exemple, on note que le modèle a bien fait le focus sur la bande de salissure située en haut pour classifier l'image Bottom Dirt. 
+                    **Interprétabilité avec :red[LIME]** 
+                    - Interprétation **cohérente** sur les quelques exemples étudiés
+                    - **Complexité** de la pipeline => difficultés d'interprétabilité
+                    - Méthode **approximative et locale**.
                     """)
-        st.image(load_image("resources/interpretabilite_svm.png"),caption="Interprétabilité LIME sur une image Bottom Dirt")
+        with st.columns([0.1,0.8,0.1])[1]:
+            st.image(load_image("resources/resultats/interpretabilite_svm.png"),caption="Interprétabilité LIME sur une image Bottom Dirt")
     if modele_name == "XGBoost":
         st.markdown("""
-                    Nous pouvons faire ici une interprétabilité assez directe, à la fois globale et locale, à l'aide de :
-                    - la simplicité relative des features et de la pipeline
-                    - l'**importance des features** fournie intrinsèquement par XGBoost
-                    - l'utilisation de **SHAP**
-
-                    Par exemple avec SHAP, nous pouvons voir les caractéristiques les plus influentes pour la classification :
-                    - la valeur max des pixels de l'image. Notamment pour les classes healthy et break (qui doit être peu élevée pour la première, très élevée pour la seconde)
-                    - la densité de contours
-                    - le degré de dissymétrie de la distribution des niveaux de gris
-                    - les propriétés de texture en général
+                    **Interprétabilité avec :red[l'importance des features] et :red[SHAP]** 
+                    - Interprétabilité **globale** et **locale**. Résultats cohérents.
+                    - **Simplicité** de la pipeline => explication du modèle assez directe
                     """)
-        st.image(load_image("resources/interpretabilite_xgboost.png"),caption="Interprétabilité SHAP globale")
+        with st.columns([0.2,0.6,0.2])[1]:
+            st.image(load_image("resources/resultats/interpretabilite_xgboost.png"),caption="Interprétabilité SHAP globale")
     if modele_name == "CNN Perso":
         st.markdown("""
-                    Nous avons appliqué la technique de **Grad-CAM** sur les couches de convolution de ce CNN pour visualiser les zones des images les plus déterminantes dans la décision.
-                    D'après les exemples d'images étudiés, le CNN a bien appris à repérer les zones chaudes, les patterns de salissure en bas, etc., concordant avec l'expertise métier.
-                    Nous avons également utilisé **SHAP** en complément, qui a confirmé la cohérence des principales zones observées par le modèle pour la prédiction des défauts.
-
-                    Dans l'exemple ci-dessous, une image prédite Short circuit panel, la Grad-CAM met en évidence les cellules avec des grosses variations de température dès la seconde couche de convolution.
+                    **Interprétabilité avec :red[Grad-CAM] et :red[SHAP]** 
+                    - Interprétabilité directement sur les **images**
+                    - Repérage des zones en défaut **conforme** à l'expertise métier
                     """)
-        st.image(load_image("resources/interpretabilite_cnn.png"),caption="Grad-CAM appliqué aux 4 couches de convolution sur une image Short circuit panel")
+        with st.columns([0.3,0.4,0.3])[1]:
+            with st.container(border=True):
+                st.image(load_image("resources/resultats/interpretabilite_cnn.png"),caption="Interprétabilité Grad-CAM sur une image Short circuit panel")
+            with st.container(border=True):
+                st.image(load_image("resources/resultats/interpretabilite_cnn_2.png"),caption="Interprétabilité Grad-CAM sur une image Shadow")
     if modele_name == "MobileNet":
         st.markdown("""
-                    Nous avons appliqué **SHAP** sur les images des différentes catégories pour comprendre sur quelles régions notre modèle se focalise pour telle ou telle prédiction.
-                    Sur quelques images test, SHAP a pu mettre en évidence les zones chaudes ou anormales du panneau comme ayant les valeurs SHAP les plus élevées pour prédire la classe correspondante.
-                    En d'autres termes, le modèle MobileNet fine-tuné utilise bien les hot spots ou motifs de panne attendus.
-
-                    Par exemple sur l'image Hot Cell ci-dessous, on constate que les cellules avec une forte variation locale de température à droite ont bien été repérées.
+                    **Interprétabilité avec :red[SHAP]** 
+                    - Interprétabilité directement sur les **images**
+                    - Repérage des zones en défaut **conforme** à l'expertise métier
                     """)
-        st.image(load_image("resources/interpretabilite_mobilenet.png"),caption="Interprétabilité SHAP sur une image Hot Cell")
+        with st.columns([0.2,0.6,0.2])[1]:
+            with st.container(border=True):
+                st.image(load_image("resources/resultats/interpretabilite_mobilenet.png"),caption="Interprétabilité SHAP sur une image Hot Cell")
+            with st.container(border=True):
+                st.image(load_image("resources/resultats/interpretabilite_mobilenet_2.png"),caption="Interprétabilité SHAP sur une image Substring open circuit")
