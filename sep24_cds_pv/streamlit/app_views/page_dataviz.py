@@ -202,7 +202,7 @@ def show_dataviz(df,statistiques):
         col1, col2, col3 = st.columns([0.25, 0.5, 0.25]) 
         with col2:  
             st.image(
-                load_image(f"resources/histo_{propriete_glcm.lower()}.png"),
+                load_image(f"resources/dataviz/histo_{propriete_glcm.lower()}.png"),
                 width="stretch",
             )
 
