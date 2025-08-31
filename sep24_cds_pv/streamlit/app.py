@@ -50,7 +50,7 @@ if 'initialised' not in st.session_state:
   progress.progress(10)
 
   # Calcul des statistiques (en cache)
-  status.text("Calcul des statistiques...")
+  status.text("Calcul des statistiques et propriétés sur les images...")
   statistisques = calculate_stats(df_pvf10)
   progress.progress(20)
 
@@ -101,10 +101,10 @@ pages = ["Présentation", "DataViz", "Méthode", "Résultats", "Démo", "Bilan",
 # Sidebar pour la navigation
 with st.sidebar:
     # Image drone
-    st.image(load_image("resources/img_sommaire.png"))
+    st.image(load_image("resources/presentation/Termal-Muayene.jpg"))
     # Menu
     page = option_menu(
-        menu_title="Sommaire",
+        menu_title="Menu",
         options=pages,
         icons=["house", "bar-chart", "cpu", "graph-up-arrow", "image", "check-circle", "book"],  # icônes Bootstrap
         menu_icon="cast",
@@ -122,6 +122,7 @@ with st.sidebar:
                 "color": "white",
                 "--hover-color": "#34495E",
                 "margin":"0px",
+                "padding": "6px 8px"
             },
             "nav-link-selected": {
                 "background-color": "#1ABC9C",
