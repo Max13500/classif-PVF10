@@ -117,7 +117,8 @@ def show_dataviz(df,statistiques):
                 plt.xlabel(indicateur,fontsize=14)
                 plt.ylabel("Densité de probabilité",fontsize=14)
                 plt.title(f"Histogramme (avec densité KDE)",fontsize=14, fontweight='bold')
-                st.pyplot(fig)
+                with st.columns([1,24,1])[1]:
+                    st.pyplot(fig)
 
         st.subheader("A retenir")
 
@@ -190,7 +191,8 @@ def show_dataviz(df,statistiques):
                 plt.xlabel(propriete,fontsize=14)
                 plt.ylabel("Densité de probabilité",fontsize=14)
                 plt.title(f"Histogramme (avec densité KDE)",fontsize=14, fontweight='bold')
-                st.pyplot(fig)
+                with st.columns([1,20,1])[1]:
+                    st.pyplot(fig)
         
         st.subheader("Proriétés GLCM")
         st.markdown("""
@@ -199,8 +201,7 @@ def show_dataviz(df,statistiques):
 
         # Histogrammes GLCM
         propriete_glcm = st.selectbox("Propriété texturale GLCM",["Contraste","Correlation","Energie","Homogeneite"]) 
-        col1, col2, col3 = st.columns([0.25, 0.5, 0.25]) 
-        with col2:  
+        with st.columns([3,5,3])[1]: 
             st.image(
                 load_image(f"resources/dataviz/histo_{propriete_glcm.lower()}.png"),
                 width="stretch",
