@@ -32,6 +32,7 @@ dependencies = [
   "pandas",
   "pillow",
   "plotly",
+  "protobuf>=5.28.3,<6",
   "scikit-image",
   "scikit-learn",
   "scikit-posthocs",
@@ -39,12 +40,12 @@ dependencies = [
   "seaborn",
   "shap",
   "statsmodels",
-  "streamlit",
+  "streamlit==1.49.0",
   "streamlit_option_menu",
-  "tensorflow",
+  "tensorflow==2.19.0",
   "tqdm",
   "umap-learn",
-  "xgboost",
+  "xgboost==3.0.3",
 ]
 
 [build-system]
