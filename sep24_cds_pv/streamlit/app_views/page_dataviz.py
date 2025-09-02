@@ -260,8 +260,8 @@ def show_dataviz(df,statistiques):
         with st.expander("Pour en savoir plus sur les propriétés texturales..."):
 
             st.markdown("""
-            - l'**entropie** : quantifie la diversité des niveaux de gris (entre 0 et log2(256), soit 8). Une entropie élevée traduit une texture complexe.
-            - la **densité de contours** : proportion de contours dans l'image après application du filtre de Canny, indiquant des transitions abruptes.
+            - l'**[entropie](https://scikit-image.org/docs/0.25.x/auto_examples/filters/plot_entropy.html#entropy)** : quantifie la diversité des niveaux de gris (entre 0 et log2(256), soit 8). Une entropie élevée traduit une texture complexe.
+            - la **densité de contours** : proportion de contours dans l'image après application du [filtre de Canny](https://en.wikipedia.org/wiki/Canny_edge_detector), indiquant des transitions abruptes.
             - la **matrice [GLCM](https://en.wikipedia.org/wiki/Co-occurrence_matrix)** : décrit la fréquence à laquelle des paires de niveaux de gris (i,j) apparaissent dans une image, selon une certaine distance et direction entre pixels.
             On en déduit les propriétés suivantes : 
                 - le **contraste** (entre 0 et 255²): mesure l'écart d'intensité entre pixels voisins. Un contraste élevé indique de fortes variations de niveaux de gris.
