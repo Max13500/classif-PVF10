@@ -138,8 +138,8 @@ def show_bilan(modeles,y_test):
             - **Avantage DL**
                 - 🔎 **:red[Auto-sélection des features]** -> **le modèle "choisit" lui-même** les **features les plus pertinents :red[pendant l'apprentissage]**
             - **Avantage ML** : 
-                - 🧩 **:red[Meilleure interprétabilité]**
-                - 🪶 **:red[plus légers]** -> ⏱️ **gain de temps** (apprentissage comme prédiction)
+                - 🧩 **:red[Meilleure interprétabilité]** (dépend en réalité du **modèle utilisé**)
+                - 🪶 **:red[Modèles plus légers]** -> ⏱️ **gain de temps** (apprentissage comme prédiction - **mais l'extraction des features peut être long**)
             - Choix **ML vs DL** : **compromis** entre
                 - 📈 **:red[Performance de prédiction]** (accuracy, précision, rappel)
                 - 🖥️ **:red[Contraintes de déploiement]** (moyens de calcul limités - temps réel embarqué par exemple)
@@ -153,20 +153,21 @@ def show_bilan(modeles,y_test):
         st.subheader("Regard critique sur notre travail")
         st.markdown("""
             - **Chaîne d'acquisition :red[non maîtrisée]**
-                - 🔒 Conversion images infrarouge -> niveau de gris :red[non documentée]
+                - 🔐 Conversion images infrarouge -> niveau de gris :red[non documentée]
                 - 🚫 :red[Difficulté de réutilisation] de notre modèle sur **autres jeux de données** ou **images brutes**
                 - ✅ **Méthodologie appliquée :red[reste pertinente] !**
             - **Déséquilibre entre classes -> :red[impact sur les performances]** (notamment des modèles ML)
                 - 📉 **Gain limité** des approches testées de :red[sur-échantillonnage] ou d':red[augmentation de données]
                 - 🚀 **Potentiel d'amélioration** possible par exploration d'approches plus élaborées
             - **Marge de progression des modèles ML** -> :red[exploration de features complémentaires]
-                - 🎯 **Ciblage** de certaines zones des images (Caractéristiques **[GLCM](https://en.wikipedia.org/wiki/Co-occurrence_matrix)** ou **entropie** 
-                ou **indicateurs statistiques :red[localisés]**
+                - 🎯 **Ciblage** de certaines zones des images (Caractéristiques [GLCM](https://en.wikipedia.org/wiki/Co-occurrence_matrix) ou **entropie** 
+                ou **indicateurs statistiques :red[localisés]**)
                 - 🌀 Autres descripteurs de **texture** ([Local Binary Patterns](https://en.wikipedia.org/wiki/Local_binary_patterns) par exemple) 
                 ou **features de forme** des hot spots de l'image
-                - ⚠️ **Rapport effort / gain en performance :red[défavorable]** pour les modèles **ML vs DL**
-                    - **Chaque ajout de feature :red[complexifie] le pipeline** de calcul et l'apprentissage
-                    - Rappel : les **réseaux de neurones :red[apprennent par eux-mêmes] les features pertinents** pour le problème soumis !
+                - **:red[Mais]** rapport **effort / gain en performance** :red[défavorable] pour les modèles **ML vs DL** ⚠️
+                    - Tout **nouveau feature** doit être testé, tuné, validé, ... -> :red[opérations chronophages]
+                    - **Chaque ajout de feature** :red[complexifie] **le pipeline** de calcul et l'apprentissage
+                    - Rappel : les **réseaux de neurones** :red[apprennent par eux-mêmes] **les features pertinents** pour le problème soumis !
         """)
 
     # Tab 4 : Perspectives
@@ -176,10 +177,10 @@ def show_bilan(modeles,y_test):
             - **Valider la :red[généralisation du modèle]**
                 - 🧪 Tester d'**autres jeux de données**
             - **Compléter l':red[intégration opérationelle]**
-                - 🎯 Ajouter un **modèle de détection** en amont (type [YOLO](https://en.wikipedia.org/wiki/You_Only_Look_Once)) -> :red[segmentation] des panneaux PV dans une image complète
                 - ⚙️ **Maîtriser le pré-processing** (images thermiques → niveaux de gris)
+                - 🎯 Ajouter un **modèle de détection** en amont (type [YOLO](https://en.wikipedia.org/wiki/You_Only_Look_Once)) -> :red[segmentation] des panneaux PV dans une image complète
             - **Maintenir une :red[veille technologique]** sur nouveaux modèles ou architectures DL
-                - 🧠 **Architectures CNN plus récentes** : Transformers
+                - 🧠 **Architectures plus récentes** : Transformers
                 - 🔀 **Hybrides** : Tranformers + CNN ou CNN + classifieurs ML
                 - 🌡️ **Spécialisés** : modèles pré-entraînés sur bases d'images thermiques
             - **Améliorer l':red[interprétabilité]** des modèles DL mis en oeuvre -> développement d'un module d'explication
