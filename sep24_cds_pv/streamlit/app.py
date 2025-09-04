@@ -8,12 +8,22 @@ from extractors import BaseStatsExtractor,HOGExtractor, GLCMExtractor, EntropyEx
 from app_setup import modeles,load_dataset,calculate_stats,encode_labels,load_modele,predict_on_test
 
 # Fonctions d'affichage des différentes pages
-from app_views import load_image,show_presentation,show_dataviz,show_method,show_results,show_demo,show_bilan
+from app_views import (
+  load_image,
+  show_presentation,
+  show_dataviz,
+  show_method,
+  show_results,
+  show_demo,
+  show_bilan,
+  show_references,
+)
 
 # Configuration générale de la page
 st.set_page_config(
     page_title="Classification PVF-10",
-    page_icon="resources/logo.png"
+    page_icon="resources/logo.png",
+    layout="wide",
 )
 # Sidebar anthracite
 st.markdown(
@@ -40,7 +50,7 @@ if 'initialised' not in st.session_state:
   progress.progress(10)
 
   # Calcul des statistiques (en cache)
-  status.text("Calcul des statistiques...")
+  status.text("Calcul des statistiques et propriétés sur les images...")
   statistisques = calculate_stats(df_pvf10)
   progress.progress(20)
 
@@ -87,16 +97,16 @@ else:
     modeles[modele_name]["predicted_data_test"] = predict_on_test(modele_name,X_test,tuple(encoder.classes_))
 
 # Navigation sur 6 pages
-pages = ["Présentation", "DataViz", "Méthode", "Résultats", "Démo","Bilan"]
+pages = ["Présentation", "DataViz", "Méthode", "Résultats", "Démo", "Bilan", "Références"]
 # Sidebar pour la navigation
 with st.sidebar:
     # Image drone
-    st.image(load_image("resources/img_sommaire.png"))
+    st.image(load_image("resources/presentation/Termal-Muayene.jpg"))
     # Menu
     page = option_menu(
-        menu_title="Sommaire",
+        menu_title="Menu",
         options=pages,
-        icons=["house", "bar-chart", "cpu", "graph-up-arrow", "image", "check-circle"],  # icônes Bootstrap
+        icons=["house", "bar-chart", "cpu", "graph-up-arrow", "image", "check-circle", "book"],  # icônes Bootstrap
         menu_icon="cast",
         default_index=0,
         styles={
@@ -110,7 +120,9 @@ with st.sidebar:
             },
             "nav-link": {
                 "color": "white",
-                "--hover-color": "#34495E"
+                "--hover-color": "#34495E",
+                "margin":"0px",
+                "padding": "6px 8px"
             },
             "nav-link-selected": {
                 "background-color": "#1ABC9C",
@@ -187,3 +199,7 @@ if page == pages[4] :
 # Page Bilan
 if page == pages[5] :
   show_bilan(modeles,y_test)
+
+# Page Références
+if page == pages[6]:
+  show_references()
