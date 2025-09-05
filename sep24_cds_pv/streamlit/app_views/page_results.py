@@ -52,7 +52,7 @@ def show_results(modeles,y_test):
             summary_str = get_model_summary(modeles[modele_name]["trained_model"])
             st.code(summary_str, language="text")
     if modele_name == "MobileNet":
-        with st.columns([0.2,0.6,0.2])[1]:
+        with st.columns([0.05,0.9,0.05])[1]:
             st.image(load_image("resources/resultats/architecture_mobileNet.png"))
         with st.expander("Pour visualiser l'architecture détaillée du réseau..."):
             # Récupérer et afficher le résumé dans Streamlit
