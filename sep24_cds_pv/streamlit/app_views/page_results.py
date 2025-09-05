@@ -137,6 +137,6 @@ def show_results(modeles,y_test):
                     """)
         with st.columns([0.2,0.6,0.2])[1]:
             with st.container(border=True):
-                st.image(load_image("resources/resultats/interpretabilite_mobilenet.png"),caption="Interprétabilité SHAP sur une image Hot Cell")
+                st.image(load_image("resources/resultats/interpretabilite_mobileNet.png"),caption="Interprétabilité SHAP sur une image Hot Cell")
             with st.container(border=True):
-                st.image(load_image("resources/resultats/interpretabilite_mobilenet_2.png"),caption="Interprétabilité SHAP sur une image Substring open circuit")
+                st.image(load_image("resources/resultats/interpretabilite_mobileNet_2.png"),caption="Interprétabilité SHAP sur une image Substring open circuit")
