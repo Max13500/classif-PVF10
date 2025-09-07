@@ -12,7 +12,7 @@ def show_demo(modeles,X_test,y_test):
 
     with st.container(border=True):
         # Choix par l'utilisateur d'afficher une image de chaque classe, ou une classe en particulier
-        all_classes = st.toggle("Tester tous les types de défauts",True)
+        all_classes = st.toggle("Tester tous les types de défauts",False)
 
         # 1er cas : on récupère une image de chaque classe au hasard (=> 10 en tout)
         if all_classes:
@@ -24,7 +24,7 @@ def show_demo(modeles,X_test,y_test):
             with sel_cols[0]:
                 nom_classe = st.selectbox("Choix du défaut",y_test.unique())
             with sel_cols[1]:
-                nb_img = st.slider("Nombre d'images à afficher",1,10,5)
+                nb_img = st.slider("Nombre d'images à afficher",1,10,3)
             # Sécurité : cas où nb d'éléments de la classe < nb demandé
             nb_img = min(nb_img,len(y_test[y_test==nom_classe]))
             # On récupère de manière aléatoire les images demandées
