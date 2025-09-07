@@ -20,7 +20,7 @@ RUN pip install toml-cli
 RUN toml get --toml-path pyproject.toml project.dependencies \
     | sed 's/[][]//g' \
     | tr -d "'" \
-    | tr ', ' '\n' \
+    | sed 's/, /\n/g' \
     | sed '/^\s*$/d' > ${REQS_FILE}
 
 # Install the dependencies
