@@ -1,0 +1,48 @@
+# syntax=docker/dockerfile:1-labs
+
+FROM python:3.12-slim
+
+ARG REQS_FILE="pyproject_requirements.txt"
+
+# Install required tools
+RUN apt-get update && apt-get install -y sed
+
+# Upgrade pip
+RUN pip install --upgrade pip
+
+# Set workdir
+WORKDIR /app
+
+# Copy all files needed by the Streamlit app
+COPY ./data/raw/PVF-10/PVF_10_110x60/test data/raw/PVF-10/PVF_10_110x60/test
+COPY ./data/raw/PVF-10/PVF_10_110x60/train data/raw/PVF-10/PVF_10_110x60/train
+COPY ./data/processed/structure_pvf_10.csv data/processed/structure_pvf_10.csv
+COPY ./models models
+COPY --exclude=__pycache__ ./sep24_cds_pv/streamlit sep24_cds_pv/streamlit
+COPY pyproject.toml .
+
+# Install toml-cli
+RUN pip install toml-cli
+
+# Extract the dependencies into the defined requirements file
+RUN toml get --toml-path pyproject.toml project.dependencies \
+    | sed 's/[][]//g' \
+    | tr -d "'" \
+    | sed 's/, /\n/g' \
+    | sed '/^\s*$/d' > ${REQS_FILE}
+
+# Install the dependencies
+RUN pip install -r ${REQS_FILE}
+# RUN pip install .
+
+# Expose Streamlit port
+EXPOSE 8501
+
+# Tell Docker how to check that the container is up and running
+HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health
+
+# Set the workdir to streamlit subdir
+WORKDIR /app/sep24_cds_pv/streamlit
+
+# Start the streamlit app
+ENTRYPOINT ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
