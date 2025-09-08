@@ -12,31 +12,35 @@ Ce dépôt contient l'ensemble des fichiers (notebooks Jupyter, modules et packa
 
 ## Organisation du projet
 
-    ├── LICENSE
-    ├── README.md          <- Ce fichier
+    ├── .devcontainer         <- Contient le fichier 'devcontainer.json' qui permet à VS Code d'utiliser
+    │   └── devcontainer.json    un environnement python hébergé dans un conteneur Docker
+    ├── Dockerfile_dev        <- Reproduit l'environnement python de travail dans un conteneur Docker
+    ├── Dockerfile_streamlit  <- Permet de créer un conteneur pour exécuter le Streamlit du projet
+    │
+    ├── README.md             <- Ce fichier
     ├── data
-    │   ├── processed      <- Données pré-traitées après exécution des notebooks
-    │   └── raw            <- Les données brutes
+    │   ├── processed         <- Données pré-traitées après exécution des notebooks
+    │   └── raw               <- Les données brutes
     │
-    ├── models             <- Modèles entraînés correspondant aux 4 approches évaluées
+    ├── models                <- Modèles entraînés correspondant aux 4 approches évaluées
     │
-    ├── notebooks          <- Notebooks Jupyter d'exploration et de travail
-    │                         "1.0 - [...].ipynb" -> Notebook d'exploration
-    │                         "2.0 - [...].ipynb" -> Notebooks de modélisation/évaluation
-    │                         "2.1 - [...].ipynb" -> Notebooks complémentaires
+    ├── notebooks             <- Notebooks Jupyter d'exploration et de travail
+    │                            "1.0 - [...].ipynb" -> Notebook d'exploration
+    │                            "2.0 - [...].ipynb" -> Notebooks de modélisation/évaluation
+    │                            "2.1 - [...].ipynb" -> Notebooks complémentaires
     │
-    ├── references         <- Publication scientifique de référence à la base notre travail
+    ├── references            <- Publication scientifique de référence à la base notre travail
     │
-    ├── reports            <- Les 2 rapports rendus dans le cadre de ce projet
+    ├── reports               <- Les 2 rapports rendus dans le cadre de ce projet
     │
-    ├── requirements.txt   <- Le fichier "requirements.txt" permettant de reproduire l'environnement d'exécution
+    ├── requirements.txt      <- Liste exhaustive et versionnée des dépendances du projet
     │
-    └── sep24_cds_pv       <- Code source du projet
-        ├── __init__.py    <- Permet d'installer le projet comme un package
+    └── sep24_cds_pv          <- Code source du projet
+        ├── __init__.py       <- Permet d'installer le projet comme un package
         │
-        └── streamlit      <- Le Streamlit du projet
-            └── app.py     <- Le script principal du site Streamlit
-                              Dans ce répertoire, exécuter la commande `streamlit run app.py`
+        └── streamlit         <- Le Streamlit du projet
+            └── app.py        <- Le script principal du site Streamlit
+                                 Dans ce répertoire, exécuter la commande `streamlit run app.py`
 
 ## Récupération du dataset de travail
 
@@ -44,7 +48,7 @@ Le dataset de travail est (à fin août 2025) disponible à l'adresse suivante :
 
 Afin d'exécuter les notebooks et de lancer le Streamlit, il est indispensable de dézipper les images brutes du dataset dans le répertoire `data/raw`.
 
-L'arborescence obtenue dans le répertoire `data` doit être la suivante :
+Après l'extraction des fichiers de l'archive, l'arborescence obtenue dans le répertoire `data` doit être la suivante :
 
 ```
 data
@@ -52,7 +56,6 @@ data
 └── raw
     └── PVF-10
         ├── PVF_10_110x60
-        │   ├── augmented
         │   ├── test
         │   └── train
         ├── PVF_10_112x112
@@ -104,15 +107,57 @@ Les 2 rapports suivants ont été rendus au cours du projet :
   - `Rapport_Exploration_PVF10_Rendu1.pdf` : Le rapport d'exploration préliminaire du jeu de données
   - `Classification de Défauts dans les Panneaux Photovoltaïques – Bilan du Projet.pdf` :  le rapport final rendu en fin de projet
 
+## Installation des dépendances du projet
+
+Note importante : la version minimale de python nécessaire au projet est **3.12**.
+
+Pour installer les dépendances du projet dans votre environnement python cible, la commande suivante devrait suffire (depuis la racine du dépôt) :
+
+``` shell
+pip install .
+```
+
+Une alternative est possible en utilisant le fichier `requirements.txt` :
+
+``` shell
+pip install -r requirements.txt
+```
+(mais dans ce cas il reste nécessaire d'installer le package du projet avec `pip install .`)
+
+
 ## Streamlit
 
-_TODO_
+Le Streamlit du projet se lance à l'aide des commandes suivantes, depuis la racine du dépôt :
+
+``` shell
+cd sep24_cds_pv/streamlit
+streamlit run app.py --server.port 8501
+```
+
+Si tout se passe comme prévu, votre navigateur par défaut s'ouvre et charge le site web du projet, basé sur le framework Streamlit.
 
 ## Docker
 
-_TODO_:
-  - Comment utiliser le Dockerfile_dev pour disposer d'un environnement python de dev dans un conteneur Docker
-  - Comment utiliser le Dockerfile_streamlit pour lancer le streamlit
+Pour utiliser Docker, vous devez disposer d'une machine équipée de Docker Desktop (Mac, Windows) ou de Docker Engine (linux).
+
+### Devcontainer
+
+L'extension [Devcontainer](https://code.visualstudio.com/docs/devcontainers/containers) de l'IDE VS Code permet d'utiliser un environnement python hébergé dans un conteneur Docker.
+
+Si vous utilisez VS Code, l'installation de l'extension devrait ensuite vous permettre de créer, d'exécuter et de vous connecter à un conteneur disposant d'un environneemnt python dans lequel l'ensemble des dépendances du projet sont installées.
+
+### Conteneur Streamlit
+
+Le fichier `Dockerfile_streamlit` permet de créer un conteneur Docker qui exécute le Streamlit du projet.
+
+Il suffit pour cela d'exécuter les commandes suivantes :
+
+``` shell
+docker build -f Dockerfile_streamlit -t streamlit .
+docker run -p 8501:8501 streamlit
+```
+
+L'app Streamlit est ensuite disponible à l'adresse suivante : http://localhost:8501
 
 ## Membres du projet
 
