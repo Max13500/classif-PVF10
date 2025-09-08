@@ -139,7 +139,7 @@ def show_presentation(df):
         st.subheader("Aperçu des données du dataset PVF-10")
         
         # On récupère au hasard une ligne du dataframe par classe
-        df_sel = df.groupby("Classe").apply(lambda x: x.sample(1))
+        df_sel = df.groupby("Classe").sample(1)
 
         data_col1, data_col2 = st.columns([4,3])
 

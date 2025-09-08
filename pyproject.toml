@@ -34,7 +34,7 @@ dependencies = [
   "plotly",
   "protobuf>=5.28.3,<6",
   "scikit-image",
-  "scikit-learn",
+  "scikit-learn==1.6.1",
   "scikit-posthocs",
   "scipy",
   "seaborn",

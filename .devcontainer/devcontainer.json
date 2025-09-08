@@ -1,7 +1,7 @@
 {
     "name": "sep24_cds_pv_image",
     "build": {
-        "dockerfile": "../Dockerfile",
+        "dockerfile": "../Dockerfile_dev",
         "context": ".."
     },
     "customizations": {
