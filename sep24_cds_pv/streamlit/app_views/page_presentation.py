@@ -50,10 +50,11 @@ def show_presentation(df):
         with st.columns([1,2,1])[1]:
             st.image("resources/presentation/installed-solar-pv-capacity.svg", width=800)
 
+        with st.columns([1,5,1])[1]:
             st.image(
                 "resources/presentation/Vue-aérienne-de-la-centrale-photovoltaïque-de-Cestas.jpg",
                 caption="Centrale photvoltaïque de Cestas - la plus grande de France (en 2025) - 300 MWc - 260 hectares",
-                width=800,
+                # width=800,
             )
         
         # Section 3
