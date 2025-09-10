@@ -66,7 +66,10 @@ def show_presentation(df):
             - Sur des centrales de grande taille, **l'inspection manuelle :red[n'est pas possible]**.
         """)
 
-        # Section 4
+    # Tab 2 : Objectifs du projet
+    with tab2:
+
+        # Section 1
         st.subheader("Une solution : l'inspection par imagerie thermique")
 
         st.markdown("""
@@ -89,13 +92,10 @@ def show_presentation(df):
                 caption="Exemple de défauts vus par caméra thermique",
             )
 
-    # Tab 2 : Objectifs du projet
-    with tab2:
-
-        # Section 1
+        # Section 2
         st.subheader("Automatiser la détection et l'identification des défauts")
 
-        with st.columns([1,8,1])[1]:
+        with st.columns([1,12,1])[1]:
             st.image(
                 "resources/presentation/solar_panels_defects.png",
                 caption="Exemples de signatures thermiques de différents défauts",
@@ -107,7 +107,10 @@ def show_presentation(df):
             - Mais c'est précisément **le domaine d'action des algorithmes de :red[Machine Learning et Deep Learning]**.
         """)
 
-        # Section 2
+    # Tab 3 : Aperçu des données
+    with tab3:
+
+        # Section 1
         st.subheader("Notre jeu de données : PVF-10")
 
         st.markdown("""
@@ -117,7 +120,7 @@ def show_presentation(df):
             - **:red[9] types de défauts** différents **+ :red[1] type "sain"**.
         """)
 
-        with st.columns([1,1,1])[1]:
+        with st.columns([1,3,1])[1]:
             st.image("resources/presentation/elsevier.png")
 
         with st.expander("Les 10 classes répertoriées dans PVF-10"):
@@ -134,9 +137,7 @@ def show_presentation(df):
                 - **:red[healthy panel]** : Panneau sans défaut thermique ou structurel. Référence de fonctionnement normal.
             """)
 
-    # Tab 3 : Aperçu des données
-    with tab3:
-
+        # Section 2
         st.subheader("Aperçu des données du dataset PVF-10")
         
         # On récupère au hasard une ligne du dataframe par classe
