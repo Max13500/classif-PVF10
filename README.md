@@ -12,20 +12,21 @@ Ce dépôt contient l'ensemble des fichiers (notebooks Jupyter, modules et packa
 
 ## Organisation du projet
 
-    ├── .devcontainer         <- Contient le fichier 'devcontainer.json' qui permet à VS Code d'utiliser
-    │   └── devcontainer.json    un environnement python hébergé dans un conteneur Docker
+    ├── .devcontainer         <- Contient le fichier 'devcontainer.json' qui permet à VS Code 
+    │   └── devcontainer.json    d'utiliser un environnement python hébergé dans un conteneur Docker
     ├── Dockerfile_dev        <- Reproduit l'environnement python de travail dans un conteneur Docker
     ├── Dockerfile_streamlit  <- Permet de créer un conteneur pour exécuter le Streamlit du projet
     │
     ├── README.md             <- Ce fichier
-    ├── data
+    │
+    ├── data                  <- Répertoire contenant les données de travail
     │   ├── processed         <- Données pré-traitées après exécution des notebooks
-    │   └── raw               <- Les données brutes
+    │   └── raw               <- Données brutes
     │
     ├── models                <- Modèles entraînés correspondant aux 4 approches évaluées
     │
-    ├── notebooks             <- Notebooks Jupyter d'exploration et de travail
-    │                            "1.0 - [...].ipynb" -> Notebook d'exploration
+    ├── notebooks             <- Notebooks Jupyter d'exploration et de modélisation
+    │                            "1.0 - [...].ipynb" -> Notebook d'exploration/dataviz
     │                            "2.0 - [...].ipynb" -> Notebooks de modélisation/évaluation
     │                            "2.1 - [...].ipynb" -> Notebooks complémentaires
     │
@@ -36,7 +37,9 @@ Ce dépôt contient l'ensemble des fichiers (notebooks Jupyter, modules et packa
     ├── requirements.txt      <- Liste exhaustive et versionnée des dépendances du projet
     │
     └── sep24_cds_pv          <- Code source du projet
-        ├── __init__.py       <- Permet d'installer le projet comme un package
+        │
+        ├── features          <- Contient les fonctions et classes nécessaires à l'exécution 
+        │   └── ...              des notebooks "ML_stats"
         │
         └── streamlit         <- Le Streamlit du projet
             └── app.py        <- Le script principal du site Streamlit
@@ -56,11 +59,11 @@ data
 └── raw
     └── PVF-10
         ├── PVF_10_110x60
-        │   ├── test
-        │   └── train
+        │   ├── test
+        │   └── train
         ├── PVF_10_112x112
-        │   ├── test
-        │   └── train
+        │   ├── test
+        │   └── train
         └── PVF_10_Ori
             ├── test
             └── train
@@ -79,21 +82,21 @@ Le travail de modélisation a été divisé en 4 approches complémentaires.
 #### Machine Learning - Features localisés
 
 Les notebooks relatifs à cette approche sont les suivants :
-  - `2.0_ML_images_SVM.ipynb` : Optimisation d'un pipeline basé sur le classifieur SVM
-  - `2.0_ML_images_RF.ipynb` : Optimisation d'un pipeline basé sur le classifieur RandomForest
-  - `2.0_ML_images_DenseKeras.ipynb` : Optimisation d'un pipeline basé sur un réseau de neurones dense
+  - `2.0_ML_images_SVM.ipynb` : Optimisation d'un pipeline basé sur le classifieur **SVM**
+  - `2.0_ML_images_RF.ipynb` : Optimisation d'un pipeline basé sur le classifieur **RandomForest**
+  - `2.0_ML_images_DenseKeras.ipynb` : Optimisation d'un pipeline basé sur un **réseau de neurones dense**
 
 #### Machine Learning - Features non localisés
 
 Le notebook `2.0_ML_stats.ipynb` détaille l'ensemble des travaux d'optimisation de pipelines basés sur les classifieurs **RandomForest**, **DecisionTree**, **XGBoost**, **SVC**, **LightGBM** et **CatBoost**.
 
 2 notebooks complètent ce travail :
-  - `2.1_data_augmentation.ipynb` : Travail préparatoire portant sur l'augmentation de données à l'aide de la bibliothèque Albumentations.
+  - `2.1_data_augmentation.ipynb` : Travail préparatoire portant sur l'augmentation de données à l'aide de la bibliothèque [Albumentations](https://albumentations.ai/).
   - `2.1_ML_stats_XGBoost.ipynb` :  Evaluation de l'apport de l'oversampling sur le meilleur modèle de cette approche "ML_stats" : **XGBoost**.
 
 #### Deep Learning - CNN _from scratch_
 
-Le notebook `2.0_DL_images_CNN.ipynb` décrit la construction et l'optimisation d'un modèle à base de réseaux de neurones convolutionnels.
+Le notebook `2.0_DL_images_CNN.ipynb` décrit la construction et l'optimisation d'un modèle à base de **réseaux de neurones convolutionnels**.
 
 #### Deep Learning - Transfer Learning
 
@@ -109,7 +112,7 @@ Les 2 rapports suivants ont été rendus au cours du projet :
 
 ## Installation des dépendances du projet
 
-Note importante : la version minimale de python nécessaire au projet est **3.12**.
+**Note importante :** la version minimale de python nécessaire au projet est **3.12**.
 
 Pour installer les dépendances du projet dans votre environnement python cible, la commande suivante devrait suffire (depuis la racine du dépôt) :
 
@@ -144,7 +147,7 @@ Pour utiliser Docker, vous devez disposer d'une machine équipée de Docker Desk
 
 L'extension [Devcontainer](https://code.visualstudio.com/docs/devcontainers/containers) de l'IDE VS Code permet d'utiliser un environnement python hébergé dans un conteneur Docker.
 
-Si vous utilisez VS Code, l'installation de l'extension devrait ensuite vous permettre de créer, d'exécuter et de vous connecter à un conteneur disposant d'un environneemnt python dans lequel l'ensemble des dépendances du projet sont installées.
+Si vous utilisez VS Code, l'installation de l'extension devrait ensuite vous permettre de créer, d'exécuter et de vous connecter à un conteneur disposant d'un environneemnt python dans lequel l'ensemble des dépendances du projet sont installées. Le dockerfile utilisé dans ce cas est `Dockerfile_dev`.
 
 ### Conteneur Streamlit
 
