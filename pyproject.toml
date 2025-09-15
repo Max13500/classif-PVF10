@@ -1,6 +1,6 @@
 [project]
 name = "sep24_cds_pv"
-version = "0.0.1"
+version = "1.0.0"
 description = "SEP24-CDS-PHOTOVOLTAIQUE DataScientest Project"
 authors = [
   { name = "Maxime Benoit", email = "maxime.benoit2008@orange.fr" },
