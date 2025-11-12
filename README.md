@@ -1,4 +1,5 @@
 # Classification de défauts de panneaux photovoltaïques
+<img width="1416" height="685" alt="image" src="https://github.com/user-attachments/assets/f577caa0-a02c-4703-813f-e2cbcf97b0e1" />
 
 ## Contexte
 
