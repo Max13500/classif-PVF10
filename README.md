@@ -11,6 +11,9 @@ La thermographie, technique non destructive de capture des variations de tempér
 
 Ce dépôt contient l'ensemble des fichiers (notebooks Jupyter, modules et packages python) correspondant au travail des membres de l'équipe de ce projet, réalisé dans le cadre du cursus **Data Scientist** de la promo _**Novembre 2024 - Continu**_ chez DataScientest.
 
+Une application Streamlit présentant le projet a été développée. Elle peut être lancée à l'adresse suivante : https://huggingface.co/spaces/Max13500/PVF10
+
+
 ## Organisation du projet
 
     ├── .devcontainer         <- Contient le fichier 'devcontainer.json' qui permet à VS Code 
@@ -120,13 +123,6 @@ Pour installer les dépendances du projet dans votre environnement python cible,
 ``` shell
 pip install .
 ```
-
-Une alternative est possible en utilisant le fichier `requirements.txt` :
-
-``` shell
-pip install -r requirements.txt
-```
-(mais dans ce cas il reste nécessaire d'installer le package du projet avec `pip install .`)
 
 
 ## Streamlit
